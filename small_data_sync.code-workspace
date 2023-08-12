@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "SmallDataSyncExample",
+			"path": "examples/SmallDataSyncExample"
+		}
+	],
+	"settings": {}
+}

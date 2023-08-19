@@ -8,5 +8,7 @@
 			"path": "examples/SmallDataSyncExample"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"workbench.colorTheme": "Monokai Vibrant"
+	}
 }

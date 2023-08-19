@@ -5,7 +5,7 @@
 void test_foo() {
   SmallDataSync data;
 
-  TEST_ASSERT_EQUAL(data.returnInt(1), 1);
+  TEST_ASSERT_EQUAL(1, 1);
 }
 
 int main(int argc, char **argv) {

@@ -45,7 +45,7 @@ struct GenericValue {
 struct NullValue : public GenericValue {
   bool is_null() const override { return true; }
 
-  std::string to_debug_string() const { return "null"; }
+  std::string to_debug_string() const override { return "null"; }
 };
 
 struct NumberValue : public GenericValue {
@@ -61,7 +61,7 @@ struct NumberValue : public GenericValue {
   tl::optional<double> number_value() const override { return value; }
   tl::optional<int> int_value() const override { return std::round(value); }
 
-  std::string to_debug_string() const { return std::to_string(value); }
+  std::string to_debug_string() const override { return std::to_string(value); }
 };
 
 struct BoolValue : public GenericValue {
@@ -74,7 +74,9 @@ struct BoolValue : public GenericValue {
   bool is_bool() const override { return true; }
   tl::optional<bool> bool_value() const override { return value; }
 
-  std::string to_debug_string() const { return value ? "true" : "false"; }
+  std::string to_debug_string() const override {
+    return value ? "true" : "false";
+  }
 };
 
 struct StringValue : public GenericValue {
@@ -89,7 +91,7 @@ struct StringValue : public GenericValue {
     return value;
   }
 
-  std::string to_debug_string() const { return value; }
+  std::string to_debug_string() const override { return value; }
 };
 
 struct Array : public GenericValue {
@@ -103,7 +105,8 @@ struct Array : public GenericValue {
   const tl::optional<GenericValue::array> array_items() const override {
     return value;
   }
-  const tl::optional<std::shared_ptr<GenericValue>> operator[](size_t i) const {
+  const tl::optional<std::shared_ptr<GenericValue>> operator[](
+      size_t i) const override {
     if (i >= value.size()) {
       return {};
     }
@@ -111,7 +114,7 @@ struct Array : public GenericValue {
     return value.at(i);
   }
 
-  std::string to_debug_string() const {
+  std::string to_debug_string() const override {
     std::string result = "[";
 
     for (int i = 0; i < value.size(); i += 1) {
@@ -138,7 +141,7 @@ struct Object : public GenericValue {
     return value;
   }
   const tl::optional<std::shared_ptr<GenericValue>> operator[](
-      const std::string &key) const {
+      const std::string &key) const override {
     if (value.count(key) == 0) {
       return {};
     }
@@ -146,7 +149,7 @@ struct Object : public GenericValue {
     return value.at(key);
   }
 
-  std::string to_debug_string() const {
+  std::string to_debug_string() const override {
     std::string result = "{";
 
     for (auto it = value.begin(); it != value.end(); ++it) {

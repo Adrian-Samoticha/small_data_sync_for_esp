@@ -3,7 +3,6 @@
 #include "Codec/Codec.h"
 #include "DataObject/DataObject.h"
 #include "SyncedStruct/SyncedStruct.h"
-#include "SyncedStructEncoding/SyncedStructEncoding.h"
 
 struct SmallDataSync {
  public:

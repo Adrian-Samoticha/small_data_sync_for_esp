@@ -39,6 +39,10 @@ struct GenericValue {
 
   virtual std::string to_debug_string() const { return ""; }
 
+  virtual bool equals(const std::shared_ptr<GenericValue> &other) const {
+    return false;
+  }
+
   virtual ~GenericValue() {}
 };
 
@@ -46,6 +50,10 @@ struct NullValue : public GenericValue {
   bool is_null() const override { return true; }
 
   std::string to_debug_string() const override { return "null"; }
+
+  bool equals(const std::shared_ptr<GenericValue> &other) const override {
+    return other->is_null();
+  }
 };
 
 struct NumberValue : public GenericValue {
@@ -62,6 +70,13 @@ struct NumberValue : public GenericValue {
   tl::optional<int> int_value() const override { return std::round(value); }
 
   std::string to_debug_string() const override { return std::to_string(value); }
+
+  bool equals(const std::shared_ptr<GenericValue> &other) const override {
+    if (other->is_number()) {
+      return value == other->number_value().value();
+    }
+    return false;
+  }
 };
 
 struct BoolValue : public GenericValue {
@@ -76,6 +91,13 @@ struct BoolValue : public GenericValue {
 
   std::string to_debug_string() const override {
     return value ? "true" : "false";
+  }
+
+  bool equals(const std::shared_ptr<GenericValue> &other) const override {
+    if (other->is_bool()) {
+      return value == other->bool_value().value();
+    }
+    return false;
   }
 };
 
@@ -92,6 +114,13 @@ struct StringValue : public GenericValue {
   }
 
   std::string to_debug_string() const override { return value; }
+
+  bool equals(const std::shared_ptr<GenericValue> &other) const override {
+    if (other->is_string()) {
+      return value == other->string_value().value();
+    }
+    return false;
+  }
 };
 
 struct Array : public GenericValue {
@@ -127,6 +156,26 @@ struct Array : public GenericValue {
 
     return result + "]";
   }
+
+  bool equals(const std::shared_ptr<GenericValue> &other) const override {
+    if (!other->is_array()) {
+      return false;
+    }
+
+    const auto &otherArray = other->array_items().value();
+
+    if (value.size() != otherArray.size()) {
+      return false;
+    }
+
+    for (size_t i = 0; i < value.size(); i += 1) {
+      if (!value[i]->equals(otherArray[i])) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 };
 
 struct Object : public GenericValue {
@@ -161,6 +210,26 @@ struct Object : public GenericValue {
     }
 
     return result + "}";
+  }
+
+  bool equals(const std::shared_ptr<GenericValue> &other) const override {
+    if (!other->is_object()) {
+      return false;
+    }
+
+    const auto &otherObject = other->object_items().value();
+
+    if (value.size() != otherObject.size()) {
+      return false;
+    }
+
+    for (const auto &kv : value) {
+      if (!kv.second->equals(otherObject.at(kv.first))) {
+        return false;
+      }
+    }
+
+    return true;
   }
 };
 

@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "../utils.h"
 #include "foo.h"
 
 using namespace DataObject;
@@ -60,11 +61,35 @@ void invalid_encoding_test() {
   TEST_ASSERT_FALSE(decoded_data_object.has_value());
 }
 
+void fuzzy_json_codec_test() {
+  auto codec = std::make_shared<JsonCodec>();
+
+  std::srand(234823u);
+
+  for (int i = 0; i < 2000; i += 1) {
+    auto data_object = utils::generate_random_data_object(3);
+
+    auto encoding = codec->encode(data_object);
+
+    std::string error_string;
+    auto decoded_data_object = codec->decode(encoding, error_string);
+
+    TEST_ASSERT_TRUE(decoded_data_object.has_value());
+
+    TEST_ASSERT_TRUE(decoded_data_object.value()->equals(data_object));
+
+    TEST_ASSERT_EQUAL_STRING(
+        decoded_data_object.value()->to_debug_string().c_str(),
+        data_object->to_debug_string().c_str());
+  }
+}
+
 int main(int argc, char **argv) {
   UNITY_BEGIN();
 
   RUN_TEST(basic_json_codec_test);
   RUN_TEST(invalid_encoding_test);
+  RUN_TEST(fuzzy_json_codec_test);
 
   return UNITY_END();
 }

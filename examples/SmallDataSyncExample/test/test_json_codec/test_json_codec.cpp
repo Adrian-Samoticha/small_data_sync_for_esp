@@ -46,10 +46,25 @@ void basic_json_codec_test() {
       data_object->to_debug_string().c_str());
 }
 
+void invalid_encoding_test() {
+  auto codec = std::make_shared<JsonCodec>();
+
+  std::string invalid_json = "[1,1,1,1,1,1/INVALID]";
+
+  std::string error_string;
+  auto decoded_data_object = codec->decode(invalid_json, error_string);
+
+  TEST_ASSERT_EQUAL_STRING(error_string.c_str(),
+                           "expected ',' in list, got '/' (47)");
+
+  TEST_ASSERT_FALSE(decoded_data_object.has_value());
+}
+
 int main(int argc, char **argv) {
   UNITY_BEGIN();
 
   RUN_TEST(basic_json_codec_test);
+  RUN_TEST(invalid_encoding_test);
 
   return UNITY_END();
 }

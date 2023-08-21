@@ -8,7 +8,7 @@
 
 struct Codec {
   virtual tl::optional<std::shared_ptr<DataObject::GenericValue>> decode(
-      std::string encoded_data, std::string error_string) const = 0;
+      std::string encoded_data, std::string &error_string) const = 0;
 
   virtual std::string encode(
       std::shared_ptr<DataObject::GenericValue> data) const = 0;

@@ -99,7 +99,7 @@ struct JsonCodec : public Codec {
 
  public:
   tl::optional<std::shared_ptr<DataObject::GenericValue>> decode(
-      std::string encoded_data, std::string error_string) const override {
+      std::string encoded_data, std::string& error_string) const override {
     auto parsed_json = json11::Json::parse(encoded_data, error_string);
 
     if (!error_string.empty()) {

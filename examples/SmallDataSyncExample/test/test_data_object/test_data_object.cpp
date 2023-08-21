@@ -109,6 +109,7 @@ int main(int argc, char **argv) {
   UNITY_BEGIN();
 
   RUN_TEST(basic_nested_data_object_test);
+  RUN_TEST(basic_equivalence_test);
 
   return UNITY_END();
 }

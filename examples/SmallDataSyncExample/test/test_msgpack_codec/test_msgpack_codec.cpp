@@ -43,8 +43,8 @@ void basic_msgpack_codec_test() {
   TEST_ASSERT_TRUE(decoded_data_object.value()->equals(data_object));
 
   TEST_ASSERT_EQUAL_STRING(
-      decoded_data_object.value()->to_debug_string().c_str(),
-      data_object->to_debug_string().c_str());
+      data_object->to_debug_string().c_str(),
+      decoded_data_object.value()->to_debug_string().c_str());
 }
 
 void invalid_encoding_test() {
@@ -55,7 +55,7 @@ void invalid_encoding_test() {
   std::string error_string;
   auto decoded_data_object = codec->decode(invalid_msgpack, error_string);
 
-  TEST_ASSERT_EQUAL_STRING(error_string.c_str(), "end of buffer.");
+  TEST_ASSERT_EQUAL_STRING("end of buffer.", error_string.c_str());
 
   TEST_ASSERT_FALSE(decoded_data_object.has_value());
 }
@@ -78,8 +78,8 @@ void fuzzy_msgpack_codec_test() {
     TEST_ASSERT_TRUE(decoded_data_object.value()->equals(data_object));
 
     TEST_ASSERT_EQUAL_STRING(
-        decoded_data_object.value()->to_debug_string().c_str(),
-        data_object->to_debug_string().c_str());
+        data_object->to_debug_string().c_str(),
+        decoded_data_object.value()->to_debug_string().c_str());
   }
 }
 

@@ -34,8 +34,8 @@ void basic_nested_data_object_test() {
       "[34.000000, 37.000000, 40.000000, 48.000000, 50.000000], \"isOn\" : "
       "true, \"nullValue\" : null}";
 
-  TEST_ASSERT_EQUAL_STRING(data_object->to_debug_string().c_str(),
-                           expected_debug_string.c_str());
+  TEST_ASSERT_EQUAL_STRING(expected_debug_string.c_str(),
+                           data_object->to_debug_string().c_str());
 }
 
 void basic_equivalence_test() {

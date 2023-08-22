@@ -4,7 +4,7 @@
 #include "Codec/codecs/JsonCodec.h"
 #include "Codec/codecs/MsgPackCodec.h"
 #include "DataObject/DataObject.h"
-#include "SyncedStruct/SyncedStruct.h"
+#include "Synchronizable/Synchronizable.h"
 
 struct SmallDataSync {
  public:

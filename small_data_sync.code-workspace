@@ -9,6 +9,9 @@
 		}
 	],
 	"settings": {
-		"workbench.colorTheme": "Monokai Vibrant"
+		"workbench.colorTheme": "Monokai Vibrant",
+		"cSpell.words": [
+			"Synchronizable"
+		]
 	}
 }

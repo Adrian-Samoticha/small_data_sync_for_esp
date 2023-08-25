@@ -5,10 +5,10 @@
 #include "NetworkMessage/NetworkMessage.h"
 
 struct IncomingDecodedMessage {
-  Endpoint sender;
+  udp_interface::Endpoint sender;
   std::shared_ptr<DataObject::GenericValue> data_object;
 
-  IncomingDecodedMessage(Endpoint sender,
+  IncomingDecodedMessage(udp_interface::Endpoint sender,
                          std::shared_ptr<DataObject::GenericValue> data_object)
       : sender(sender), data_object(data_object) {}
 };

@@ -7,7 +7,9 @@ std::shared_ptr<NetworkMessage> ActiveNetworkMessage::get_network_message()
   return message;
 }
 
-Endpoint ActiveNetworkMessage::get_endpoint() const { return endpoint; }
+udp_interface::Endpoint ActiveNetworkMessage::get_endpoint() const {
+  return endpoint;
+}
 
 std::shared_ptr<Codec> ActiveNetworkMessage::get_codec() const {
   return codec;
@@ -79,7 +81,7 @@ void NetworkHandler::send_active_messages() {
 
 tl::optional<std::shared_ptr<Codec>>
 NetworkHandler::get_codec_from_incoming_message(
-    IncomingMessage incoming_message) const {
+    udp_interface::IncomingMessage incoming_message) const {
   if (incoming_message.data.length() == 0) {
     return {};
   }
@@ -98,7 +100,8 @@ NetworkHandler::get_codec_from_incoming_message(
 
 tl::optional<std::shared_ptr<DataObject::GenericValue>>
 NetworkHandler::get_data_object_from_incoming_message(
-    IncomingMessage incoming_message, std::shared_ptr<Codec> codec) const {
+    udp_interface::IncomingMessage incoming_message,
+    std::shared_ptr<Codec> codec) const {
   if (incoming_message.data.length() == 0) {
     return {};
   }
@@ -131,7 +134,8 @@ void NetworkHandler::on_received_acknowledgement(unsigned int message_id) {
                  });
 }
 
-void NetworkHandler::send_ack(unsigned int message_id, Endpoint& endpoint,
+void NetworkHandler::send_ack(unsigned int message_id,
+                              udp_interface::Endpoint& endpoint,
                               std::shared_ptr<Codec> codec) {
   auto data = DataObject::create_array({
       DataObject::create_string_value("ack"),
@@ -146,7 +150,7 @@ void NetworkHandler::send_ack(unsigned int message_id, Endpoint& endpoint,
 
 void NetworkHandler::handle_decoded_message(
     std::shared_ptr<DataObject::GenericValue> decoded_message,
-    Endpoint& endpoint, std::shared_ptr<Codec> codec) {
+    udp_interface::Endpoint& endpoint, std::shared_ptr<Codec> codec) {
   if (decoded_message->is_array()) {
     auto array_items = decoded_message->array_items().value();
     if (array_items->size() == 0) {
@@ -217,7 +221,8 @@ void NetworkHandler::handle_packet_reception() {
 }
 
 void NetworkHandler::send_message(std::shared_ptr<NetworkMessage> message,
-                                  Endpoint endpoint, unsigned int max_retries,
+                                  udp_interface::Endpoint endpoint,
+                                  unsigned int max_retries,
                                   std::shared_ptr<Codec> codec) {
   auto active_network_message = ActiveNetworkMessage(
       message, endpoint, codec, get_next_active_message_id(), max_retries);
@@ -227,7 +232,8 @@ void NetworkHandler::send_message(std::shared_ptr<NetworkMessage> message,
 }
 
 void NetworkHandler::send_message(std::shared_ptr<NetworkMessage> message,
-                                  Endpoint endpoint, unsigned int max_retries) {
+                                  udp_interface::Endpoint endpoint,
+                                  unsigned int max_retries) {
   send_message(message, endpoint, max_retries,
                create_codec_from_format(default_codec));
 }
@@ -238,7 +244,7 @@ void NetworkHandler::set_delegate(
 }
 
 void NetworkHandler::set_udp_interface(
-    std::shared_ptr<UDPInterface> new_interface) {
+    std::shared_ptr<udp_interface::UDPInterface> new_interface) {
   udp_interface = new_interface;
 }
 

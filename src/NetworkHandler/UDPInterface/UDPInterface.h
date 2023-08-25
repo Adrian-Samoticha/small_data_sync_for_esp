@@ -8,6 +8,7 @@
 
 #include "optional/include/tl/optional.hpp"
 
+namespace udp_interface {
 struct IPAddress {
   virtual bool operator==(const IPAddress& other) const = 0;
   virtual bool operator!=(const IPAddress& other) const = 0;
@@ -55,3 +56,4 @@ struct UDPInterface {
 
   virtual ~UDPInterface() = default;
 };
+}

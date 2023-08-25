@@ -5,7 +5,7 @@
 #include "../utils.h"
 #include "foo.h"
 
-using namespace DataObject;
+using namespace data_object;
 
 void basic_msgpack_codec_test() {
   auto codec = std::make_shared<MsgPackCodec>();

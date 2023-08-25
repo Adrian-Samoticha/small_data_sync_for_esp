@@ -28,7 +28,7 @@ struct ActiveNetworkMessage {
         message_id(message_id),
         retries_left(retries_left) {}
 
-  std::shared_ptr<DataObject::GenericValue> to_data_object() const {
+  std::shared_ptr<data_object::GenericValue> to_data_object() const {
     return message->to_data_object();
   }
 
@@ -63,7 +63,7 @@ struct NetworkHandler {
   tl::optional<std::shared_ptr<Codec>> get_codec_from_incoming_message(
       udp_interface::IncomingMessage incoming_message) const;
 
-  tl::optional<std::shared_ptr<DataObject::GenericValue>>
+  tl::optional<std::shared_ptr<data_object::GenericValue>>
   get_data_object_from_incoming_message(
       udp_interface::IncomingMessage incoming_message,
       std::shared_ptr<Codec> codec) const;
@@ -74,7 +74,7 @@ struct NetworkHandler {
                 std::shared_ptr<Codec> codec);
 
   void handle_decoded_message(
-      std::shared_ptr<DataObject::GenericValue> decoded_message,
+      std::shared_ptr<data_object::GenericValue> decoded_message,
       udp_interface::Endpoint& endpoint, std::shared_ptr<Codec> codec);
 
   void handle_packet_reception();

@@ -8,7 +8,7 @@
 
 #include "optional/include/tl/optional.hpp"
 
-namespace DataObject {
+namespace data_object {
 struct GenericValue {
   typedef std::vector<std::shared_ptr<GenericValue>> array;
   typedef std::map<std::string, std::shared_ptr<GenericValue>> object;
@@ -259,4 +259,4 @@ std::shared_ptr<GenericValue> create_string_value(std::string value);
 std::shared_ptr<Array> create_array(GenericValue::array value);
 
 std::shared_ptr<Object> create_object(GenericValue::object value);
-}  // namespace DataObject
+}  // namespace data_object

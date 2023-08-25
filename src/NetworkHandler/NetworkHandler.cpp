@@ -43,9 +43,9 @@ bool NetworkHandler::send_active_message(ActiveNetworkMessage& message) {
   auto endpoint = message.get_endpoint();
 
   auto message_data_object = message.to_data_object();
-  auto packet_data_object = DataObject::create_array({
-      DataObject::create_string_value("msg"),
-      DataObject::create_number_value((int)message.get_message_id()),
+  auto packet_data_object = data_object::create_array({
+      data_object::create_string_value("msg"),
+      data_object::create_number_value((int)message.get_message_id()),
       message_data_object,
   });
 
@@ -98,7 +98,7 @@ NetworkHandler::get_codec_from_incoming_message(
   return {};
 };
 
-tl::optional<std::shared_ptr<DataObject::GenericValue>>
+tl::optional<std::shared_ptr<data_object::GenericValue>>
 NetworkHandler::get_data_object_from_incoming_message(
     udp_interface::IncomingMessage incoming_message,
     std::shared_ptr<Codec> codec) const {
@@ -137,9 +137,9 @@ void NetworkHandler::on_received_acknowledgement(unsigned int message_id) {
 void NetworkHandler::send_ack(unsigned int message_id,
                               udp_interface::Endpoint& endpoint,
                               std::shared_ptr<Codec> codec) {
-  auto data = DataObject::create_array({
-      DataObject::create_string_value("ack"),
-      DataObject::create_number_value((int)message_id),
+  auto data = data_object::create_array({
+      data_object::create_string_value("ack"),
+      data_object::create_number_value((int)message_id),
   });
   auto encoded = codec->encode(data);
   auto format = codec->get_format();
@@ -149,7 +149,7 @@ void NetworkHandler::send_ack(unsigned int message_id,
 }
 
 void NetworkHandler::handle_decoded_message(
-    std::shared_ptr<DataObject::GenericValue> decoded_message,
+    std::shared_ptr<data_object::GenericValue> decoded_message,
     udp_interface::Endpoint& endpoint, std::shared_ptr<Codec> codec) {
   if (decoded_message->is_array()) {
     auto array_items = decoded_message->array_items().value();

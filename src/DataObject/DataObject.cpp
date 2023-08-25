@@ -1,6 +1,6 @@
 #include "DataObject.h"
 
-namespace DataObject {
+namespace data_object {
 std::shared_ptr<GenericValue> create_null_value() {
   return std::make_shared<NullValue>();
 }

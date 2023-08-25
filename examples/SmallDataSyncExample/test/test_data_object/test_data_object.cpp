@@ -2,7 +2,7 @@
 
 #include "foo.h"
 
-using namespace DataObject;
+using namespace data_object;
 
 void basic_nested_data_object_test() {
   auto data_object = create_object({

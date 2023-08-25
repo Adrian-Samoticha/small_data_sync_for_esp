@@ -4,39 +4,39 @@
 #include "msgpack11/msgpack11.hpp"
 
 struct MsgPackCodec : public Codec {
-  std::shared_ptr<DataObject::GenericValue> msgpack_to_data_object(
+  std::shared_ptr<data_object::GenericValue> msgpack_to_data_object(
       const msgpack11::MsgPack& msgpack) const {
     if (msgpack.is_null()) {
-      return DataObject::create_null_value();
+      return data_object::create_null_value();
     }
 
     if (msgpack.is_number()) {
-      return DataObject::create_number_value(msgpack.number_value());
+      return data_object::create_number_value(msgpack.number_value());
     }
 
     if (msgpack.is_bool()) {
-      return DataObject::create_bool_value(msgpack.bool_value());
+      return data_object::create_bool_value(msgpack.bool_value());
     }
 
     if (msgpack.is_string()) {
-      return DataObject::create_string_value(msgpack.string_value());
+      return data_object::create_string_value(msgpack.string_value());
     }
 
     if (msgpack.is_array()) {
       auto msgpack_array_items = msgpack.array_items();
-      auto data_object_array = DataObject::GenericValue::array();
+      auto data_object_array = data_object::GenericValue::array();
       data_object_array.reserve(msgpack_array_items.size());
       for (auto& element : msgpack_array_items) {
         auto data_object_element = msgpack_to_data_object(element);
         data_object_array.push_back(data_object_element);
       }
 
-      return DataObject::create_array(data_object_array);
+      return data_object::create_array(data_object_array);
     }
 
     if (msgpack.is_object()) {
       auto msgpack_object_items = msgpack.object_items();
-      auto data_object_object = DataObject::GenericValue::object();
+      auto data_object_object = data_object::GenericValue::object();
       for (auto& item : msgpack_object_items) {
         auto key = item.first;
         auto msgpack_value = item.second;
@@ -44,14 +44,14 @@ struct MsgPackCodec : public Codec {
         data_object_object[key.string_value()] = value_data_object;
       }
 
-      return DataObject::create_object(data_object_object);
+      return data_object::create_object(data_object_object);
     }
 
-    return DataObject::create_null_value();
+    return data_object::create_null_value();
   }
 
   msgpack11::MsgPack data_object_to_msgpack(
-      const std::shared_ptr<DataObject::GenericValue> data_object) const {
+      const std::shared_ptr<data_object::GenericValue> data_object) const {
     if (data_object->is_null()) {
       return msgpack11::MsgPack();
     }
@@ -97,7 +97,7 @@ struct MsgPackCodec : public Codec {
   }
 
  public:
-  tl::optional<std::shared_ptr<DataObject::GenericValue>> decode(
+  tl::optional<std::shared_ptr<data_object::GenericValue>> decode(
       std::string encoded_data, std::string& error_string) const override {
     auto parsed_msgpack = msgpack11::MsgPack::parse(encoded_data, error_string);
 
@@ -109,7 +109,7 @@ struct MsgPackCodec : public Codec {
   }
 
   std::string encode(
-      std::shared_ptr<DataObject::GenericValue> data) const override {
+      std::shared_ptr<data_object::GenericValue> data) const override {
     auto msgpack = data_object_to_msgpack(data);
 
     return msgpack.dump();

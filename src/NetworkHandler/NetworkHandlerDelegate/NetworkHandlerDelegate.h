@@ -6,10 +6,10 @@
 
 struct IncomingDecodedMessage {
   udp_interface::Endpoint sender;
-  std::shared_ptr<DataObject::GenericValue> data_object;
+  std::shared_ptr<data_object::GenericValue> data_object;
 
   IncomingDecodedMessage(udp_interface::Endpoint sender,
-                         std::shared_ptr<DataObject::GenericValue> data_object)
+                         std::shared_ptr<data_object::GenericValue> data_object)
       : sender(sender), data_object(data_object) {}
 };
 

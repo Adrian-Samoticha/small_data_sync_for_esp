@@ -83,8 +83,8 @@ struct UdpInterfaceImpl : public udp_interface::UDPInterface {
 };
 
 struct NetworkMessageImpl : public NetworkMessage {
-  virtual std::shared_ptr<DataObject::GenericValue> to_data_object() const {
-    return DataObject::create_null_value();
+  virtual std::shared_ptr<data_object::GenericValue> to_data_object() const {
+    return data_object::create_null_value();
   };
 
   virtual void on_send_succeeded() const {}

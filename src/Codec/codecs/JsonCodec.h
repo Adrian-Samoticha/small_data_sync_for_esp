@@ -115,4 +115,6 @@ struct JsonCodec : public Codec {
 
     return json.dump();
   }
+
+  DataFormat get_format() const override { return DataFormat::JSON; };
 };

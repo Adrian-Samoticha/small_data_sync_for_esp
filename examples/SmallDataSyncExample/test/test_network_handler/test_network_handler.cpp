@@ -139,7 +139,9 @@ void basic_network_handler_test() {
 
   auto receiver_delegate = std::make_shared<NetworkHandlerDelegateImpl>(
       [has_received_message](IncomingDecodedMessage message) {
-        *has_received_message = true;
+        if (message.data_object->is_null()) {
+          *has_received_message = true;
+        }
       });
   receiver_network_handler.set_delegate(receiver_delegate);
 

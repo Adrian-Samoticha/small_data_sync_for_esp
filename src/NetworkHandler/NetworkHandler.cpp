@@ -60,23 +60,21 @@ bool NetworkHandler::send_active_message(ActiveNetworkMessage& message) {
 }
 
 void NetworkHandler::send_active_messages() {
-  auto delegate_ptr = delegate;
+  auto it = active_messages.begin();
+  while (it != active_messages.end()) {
+    send_active_message(*it);
+    it->decrement_retries();
 
-  std::remove_if(
-      active_messages.begin(), active_messages.end(),
-      [this, delegate_ptr](ActiveNetworkMessage& message) {
-        send_active_message(message);
-        message.decrement_retries();
+    if (it->get_retries_left() == 0) {
+      it->get_network_message()->on_send_failed();
+      delegate->on_message_discarded(it->get_message_id());
 
-        if (message.get_retries_left() == 0) {
-          message.get_network_message()->on_send_failed();
-          delegate_ptr->on_message_discarded(message.get_message_id());
+      it = active_messages.erase(it);
+      continue;
+    }
 
-          return true;
-        }
-
-        return false;
-      });
+    it++;
+  }
 }
 
 tl::optional<std::shared_ptr<Codec>>
@@ -119,19 +117,18 @@ NetworkHandler::get_data_object_from_incoming_message(
 }
 
 void NetworkHandler::on_received_acknowledgement(unsigned int message_id) {
-  auto delegate_ptr = delegate;
+  auto it = active_messages.begin();
+  while (it != active_messages.end()) {
+    if (it->get_message_id() == message_id) {
+      it->get_network_message()->on_send_succeeded();
+      delegate->on_ack_received(it->get_message_id());
 
-  std::remove_if(active_messages.begin(), active_messages.end(),
-                 [message_id, delegate_ptr](ActiveNetworkMessage& message) {
-                   if (message.get_message_id() == message_id) {
-                     message.get_network_message()->on_send_succeeded();
-                     delegate_ptr->on_ack_received(message.get_message_id());
+      it = active_messages.erase(it);
+      continue;
+    }
 
-                     return true;
-                   }
-
-                   return false;
-                 });
+    it++;
+  }
 }
 
 void NetworkHandler::send_ack(unsigned int message_id,

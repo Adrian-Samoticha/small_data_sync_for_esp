@@ -147,7 +147,7 @@ void basic_network_handler_test() {
   sender_network_handler.send_message(message, receiver, 100);
 
   sender_network_handler.on_100_ms_passed();
-  receiver_network_handler.on_100_ms_passed();
+  receiver_network_handler.heartbeat();
 
   TEST_ASSERT_EQUAL(true, *has_received_message);
 }

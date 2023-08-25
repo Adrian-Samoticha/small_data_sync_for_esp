@@ -96,4 +96,5 @@ struct NetworkHandler {
   void set_default_codec(DataFormat codec_enum);
 
   void on_100_ms_passed();
+  void heartbeat();
 };

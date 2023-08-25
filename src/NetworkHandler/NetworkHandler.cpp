@@ -253,3 +253,5 @@ void NetworkHandler::on_100_ms_passed() {
   handle_packet_reception();  // move to heartbeat method
   send_active_messages();
 }
+
+void NetworkHandler::heartbeat() { handle_packet_reception(); }

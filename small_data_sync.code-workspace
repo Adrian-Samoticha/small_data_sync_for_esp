@@ -13,6 +13,9 @@
 		"cSpell.words": [
 			"msgpack",
 			"Synchronizable"
-		]
+		],
+		"files.associations": {
+			"string": "cpp"
+		}
 	}
 }

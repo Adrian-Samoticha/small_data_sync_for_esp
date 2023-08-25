@@ -114,4 +114,6 @@ struct MsgPackCodec : public Codec {
 
     return msgpack.dump();
   }
+
+  DataFormat get_format() const override { return DataFormat::MSGPACK; };
 };

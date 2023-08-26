@@ -53,6 +53,10 @@ struct NetworkHandler {
   DataFormat default_data_format;
   std::vector<ActiveNetworkMessage> active_messages;
   unsigned int next_active_message_id = 0;
+  uint32_t time_in_deciseconds = 0;  // a decisecond is 100 ms
+  std::map<std::pair<udp_interface::Endpoint, unsigned int>, uint32_t>
+      message_receive_times;
+  uint32_t max_message_receive_time_in_deciseconds = 600;
 
   unsigned int get_next_active_message_id();
 
@@ -79,6 +83,14 @@ struct NetworkHandler {
 
   void handle_packet_reception();
 
+  tl::optional<uint32_t> get_message_receive_time(
+      udp_interface::Endpoint endpoint, unsigned int message_id) const;
+
+  void update_message_receive_time(udp_interface::Endpoint endpoint,
+                                   unsigned int message_id);
+
+  void remove_expired_message_receive_times();
+
  public:
   void send_message(std::shared_ptr<NetworkMessage> message,
                     udp_interface::Endpoint endpoint, unsigned int max_retries,
@@ -94,6 +106,8 @@ struct NetworkHandler {
       std::shared_ptr<udp_interface::UDPInterface> new_interface);
 
   void set_default_data_format(DataFormat new_default_data_format);
+
+  void set_max_message_receive_time_in_deciseconds(uint32_t new_max_time);
 
   void on_100_ms_passed();
   void heartbeat();

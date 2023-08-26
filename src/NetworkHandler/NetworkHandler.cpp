@@ -177,11 +177,16 @@ void NetworkHandler::handle_decoded_message(
 
       send_ack(message_id, endpoint, codec);
 
-      // TODO: prevent callback from being called multiple times for same
-      // message
-      auto decoded_message =
-          IncomingDecodedMessage(endpoint, array_items->at(2));
-      delegate->on_message_received(decoded_message);
+      const auto message_already_handled =
+          get_message_receive_time(endpoint, message_id).has_value();
+
+      update_message_receive_time(endpoint, message_id);
+
+      if (!message_already_handled) {
+        auto decoded_message =
+            IncomingDecodedMessage(endpoint, array_items->at(2));
+        delegate->on_message_received(decoded_message);
+      }
     }
   }
 }
@@ -217,6 +222,35 @@ void NetworkHandler::handle_packet_reception() {
   handle_decoded_message(decoded_message, incoming_message.endpoint, codec);
 }
 
+tl::optional<uint32_t> NetworkHandler::get_message_receive_time(
+    udp_interface::Endpoint endpoint, unsigned int message_id) const {
+  auto key = std::make_pair(endpoint, message_id);
+
+  if (message_receive_times.count(key) == 0) {
+    return {};
+  }
+
+  return message_receive_times.at(key);
+}
+
+void NetworkHandler::update_message_receive_time(
+    udp_interface::Endpoint endpoint, unsigned int message_id) {
+  auto key = std::make_pair(endpoint, message_id);
+  message_receive_times[key] = time_in_deciseconds;
+}
+
+void NetworkHandler::remove_expired_message_receive_times() {
+  auto it = message_receive_times.begin();
+  while (it != message_receive_times.end()) {
+    uint32_t age = time_in_deciseconds - it->second;
+    if (age > max_message_receive_time_in_deciseconds) {
+      it = message_receive_times.erase(it);
+    } else {
+      it++;
+    }
+  }
+}
+
 void NetworkHandler::send_message(std::shared_ptr<NetworkMessage> message,
                                   udp_interface::Endpoint endpoint,
                                   unsigned int max_retries,
@@ -250,6 +284,19 @@ void NetworkHandler::set_default_data_format(
   default_data_format = new_default_data_format;
 }
 
-void NetworkHandler::on_100_ms_passed() { send_active_messages(); }
+void NetworkHandler::set_max_message_receive_time_in_deciseconds(
+    uint32_t new_max_time) {
+  max_message_receive_time_in_deciseconds = new_max_time;
+}
+
+void NetworkHandler::on_100_ms_passed() {
+  time_in_deciseconds += 1;
+
+  send_active_messages();
+
+  if (time_in_deciseconds % 16 == 0) {
+    remove_expired_message_receive_times();
+  }
+}
 
 void NetworkHandler::heartbeat() { handle_packet_reception(); }

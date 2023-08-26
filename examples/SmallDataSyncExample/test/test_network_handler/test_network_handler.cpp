@@ -117,13 +117,13 @@ void basic_network_handler_test_with_packet_loss() {
   network_simulator.register_endpoint(sender);
   network_simulator.register_endpoint(receiver);
 
-  auto has_received_message = std::make_shared<bool>(false);
+  auto message_reception_counter = std::make_shared<unsigned int>(0);
   auto has_received_ack = std::make_shared<bool>(false);
 
   auto receiver_delegate = std::make_shared<NetworkHandlerDelegateImpl>(
-      [has_received_message](IncomingDecodedMessage message) {
+      [message_reception_counter](IncomingDecodedMessage message) {
         if (message.data_object->is_null()) {
-          *has_received_message = true;
+          *message_reception_counter += 1;
         }
       });
   receiver_network_handler.set_delegate(receiver_delegate);
@@ -134,7 +134,7 @@ void basic_network_handler_test_with_packet_loss() {
                                       std::make_shared<JsonCodec>());
 
   for (int i = 0; i < 200; ++i) {
-    if (*has_received_message && *has_received_ack) {
+    if (*has_received_ack) {
       break;
     }
 
@@ -146,9 +146,9 @@ void basic_network_handler_test_with_packet_loss() {
     receiver_network_handler.on_100_ms_passed();
   }
 
-  TEST_ASSERT_EQUAL_MESSAGE(true, *has_received_message,
+  TEST_ASSERT_EQUAL_MESSAGE(1, *message_reception_counter,
                             "basic_network_handler_test_with_packet_loss "
-                            "(has_received_message should be true.)");
+                            "(message_reception_counter should be 1.)");
   TEST_ASSERT_EQUAL_MESSAGE(true, *has_received_ack,
                             "basic_network_handler_test_with_packet_loss "
                             "(has_received_ack should be true.)");

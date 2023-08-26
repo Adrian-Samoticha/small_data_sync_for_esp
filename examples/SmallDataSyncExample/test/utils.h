@@ -151,8 +151,7 @@ struct UdpInterfaceImpl : public udp_interface::UDPInterface {
     return network_simulator.is_incoming_packet_available(endpoint);
   }
   tl::optional<udp_interface::IncomingMessage> receive_packet() {
-    auto result = network_simulator.receive_packet(endpoint);
-    return result;
+    return network_simulator.receive_packet(endpoint);
   }
 };
 }  // namespace utils

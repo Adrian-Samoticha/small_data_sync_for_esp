@@ -122,7 +122,6 @@ void basic_network_handler_test_with_packet_loss() {
 
   auto receiver_delegate = std::make_shared<NetworkHandlerDelegateImpl>(
       [has_received_message](IncomingDecodedMessage message) {
-        TEST_PRINTF("Received.\n", 0);
         if (message.data_object->is_null()) {
           *has_received_message = true;
         }

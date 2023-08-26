@@ -8,13 +8,20 @@
 #include "foo.h"
 
 struct NetworkMessageImpl : public NetworkMessage {
-  virtual std::shared_ptr<data_object::GenericValue> to_data_object() const {
+  std::function<void()> on_send_succeeded_cb = []() {};
+
+  NetworkMessageImpl() {}
+
+  NetworkMessageImpl(std::function<void()> on_send_succeeded_cb)
+      : on_send_succeeded_cb(on_send_succeeded_cb) {}
+
+  std::shared_ptr<data_object::GenericValue> to_data_object() const override {
     return data_object::create_null_value();
   };
 
-  virtual void on_send_succeeded() const {}
+  void on_send_succeeded() const override { on_send_succeeded_cb(); }
 
-  virtual void on_send_failed() const {}
+  void on_send_failed() const override {}
 };
 
 struct NetworkHandlerDelegateImpl : public NetworkHandlerDelegate {
@@ -62,6 +69,7 @@ void basic_network_handler_test() {
   network_simulator.register_endpoint(receiver);
 
   auto has_received_message = std::make_shared<bool>(false);
+  auto has_received_ack = std::make_shared<bool>(false);
 
   auto receiver_delegate = std::make_shared<NetworkHandlerDelegateImpl>(
       [has_received_message](IncomingDecodedMessage message) {
@@ -71,13 +79,19 @@ void basic_network_handler_test() {
       });
   receiver_network_handler.set_delegate(receiver_delegate);
 
-  auto message = std::make_shared<NetworkMessageImpl>();
+  auto message = std::make_shared<NetworkMessageImpl>(
+      [has_received_ack]() { *has_received_ack = true; });
   sender_network_handler.send_message(message, receiver, 100);
 
   receiver_network_handler.heartbeat();
-  sender_network_handler.on_100_ms_passed();
+  sender_network_handler.heartbeat();
 
-  TEST_ASSERT_EQUAL(true, *has_received_message);
+  TEST_ASSERT_EQUAL_MESSAGE(
+      true, *has_received_message,
+      "basic_network_handler_test (has_received_message should be true.)");
+  TEST_ASSERT_EQUAL_MESSAGE(
+      true, *has_received_ack,
+      "basic_network_handler_test (has_received_ack should be true.)");
 }
 
 void basic_network_handler_test_with_packet_loss() {

@@ -50,7 +50,7 @@ struct NetworkHandler {
   std::shared_ptr<NetworkHandlerDelegate> delegate =
       std::make_shared<EmptyNetworkHandlerDelegate>();
   std::shared_ptr<udp_interface::UDPInterface> udp_interface;
-  DataFormat default_codec;
+  DataFormat default_data_format;
   std::vector<ActiveNetworkMessage> active_messages;
   unsigned int next_active_message_id = 0;
 
@@ -93,7 +93,7 @@ struct NetworkHandler {
   void set_udp_interface(
       std::shared_ptr<udp_interface::UDPInterface> new_interface);
 
-  void set_default_codec(DataFormat codec_enum);
+  void set_default_data_format(DataFormat new_default_data_format);
 
   void on_100_ms_passed();
   void heartbeat();

@@ -232,7 +232,7 @@ void NetworkHandler::send_message(std::shared_ptr<NetworkMessage> message,
                                   udp_interface::Endpoint endpoint,
                                   unsigned int max_retries) {
   send_message(message, endpoint, max_retries,
-               create_codec_from_format(default_codec));
+               create_codec_from_format(default_data_format));
 }
 
 void NetworkHandler::set_delegate(
@@ -245,8 +245,9 @@ void NetworkHandler::set_udp_interface(
   udp_interface = new_interface;
 }
 
-void NetworkHandler::set_default_codec(DataFormat codec_enum) {
-  default_codec = codec_enum;
+void NetworkHandler::set_default_data_format(
+    DataFormat new_default_data_format) {
+  default_data_format = new_default_data_format;
 }
 
 void NetworkHandler::on_100_ms_passed() { send_active_messages(); }

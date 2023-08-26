@@ -68,7 +68,7 @@ struct NetworkHandler {
       udp_interface::IncomingMessage incoming_message,
       std::shared_ptr<Codec> codec) const;
 
-  void on_received_acknowledgement(unsigned int message_id);
+  void on_received_ack(unsigned int message_id);
 
   void send_ack(unsigned int message_id, udp_interface::Endpoint& endpoint,
                 std::shared_ptr<Codec> codec);

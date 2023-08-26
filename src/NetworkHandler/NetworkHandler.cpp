@@ -116,7 +116,7 @@ NetworkHandler::get_data_object_from_incoming_message(
   return decoded_message;
 }
 
-void NetworkHandler::on_received_acknowledgement(unsigned int message_id) {
+void NetworkHandler::on_received_ack(unsigned int message_id) {
   auto it = active_messages.begin();
   while (it != active_messages.end()) {
     if (it->get_message_id() == message_id) {
@@ -164,7 +164,7 @@ void NetworkHandler::handle_decoded_message(
       if (message_id < 0) {
         return;
       }
-      on_received_acknowledgement((unsigned int)message_id);
+      on_received_ack((unsigned int)message_id);
 
     } else if (type == "msg") {
       if (array_items->size() < 3) {

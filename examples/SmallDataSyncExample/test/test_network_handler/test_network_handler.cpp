@@ -52,7 +52,7 @@ void basic_network_handler_test() {
   sender_network_handler.set_udp_interface(sender_udp_interface);
 
   auto receiver =
-      udp_interface::Endpoint(std::make_shared<utils::IPAddressImpl>(1), 0);
+      udp_interface::Endpoint(std::make_shared<utils::IPAddressImpl>(1), 1);
   auto receiver_network_handler = NetworkHandler();
   auto receiver_udp_interface = std::make_shared<utils::UdpInterfaceImpl>(
       receiver, receiver_network_handler, network_simulator);

@@ -74,8 +74,8 @@ void basic_network_handler_test() {
   auto message = std::make_shared<NetworkMessageImpl>();
   sender_network_handler.send_message(message, receiver, 100);
 
-  sender_network_handler.on_100_ms_passed();
   receiver_network_handler.heartbeat();
+  sender_network_handler.on_100_ms_passed();
 
   TEST_ASSERT_EQUAL(true, *has_received_message);
 }

@@ -249,9 +249,6 @@ void NetworkHandler::set_default_codec(DataFormat codec_enum) {
   default_codec = codec_enum;
 }
 
-void NetworkHandler::on_100_ms_passed() {
-  handle_packet_reception();  // move to heartbeat method
-  send_active_messages();
-}
+void NetworkHandler::on_100_ms_passed() { send_active_messages(); }
 
 void NetworkHandler::heartbeat() { handle_packet_reception(); }

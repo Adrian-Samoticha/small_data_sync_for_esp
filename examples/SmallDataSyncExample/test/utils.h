@@ -1,5 +1,8 @@
 #pragma once
 
+#include <unity.h>
+
+#include <cstdlib>
 #include <memory>
 #include <queue>
 
@@ -88,6 +91,9 @@ struct NetworkSimulator {
  private:
   std::map<udp_interface::Endpoint, std::queue<udp_interface::IncomingMessage>>
       endpoint_to_buffer;
+  double packet_loss_rate = 0.0;
+
+  double random_double() { return std::rand() / (RAND_MAX + 1.0); }
 
  public:
   void register_endpoint(udp_interface::Endpoint endpoint) {
@@ -96,6 +102,11 @@ struct NetworkSimulator {
 
   void send_packet(udp_interface::Endpoint sender,
                    udp_interface::Endpoint receiver, std::string packet) {
+    if (random_double() < packet_loss_rate) {
+      // Packet lost.
+      return;
+    }
+
     auto incoming_message = udp_interface::IncomingMessage(sender, packet);
     endpoint_to_buffer.at(receiver).push(incoming_message);
   }
@@ -115,6 +126,8 @@ struct NetworkSimulator {
 
     return result;
   }
+
+  void set_packet_loss_rate(double new_rate) { packet_loss_rate = new_rate; }
 };
 
 struct UdpInterfaceImpl : public udp_interface::UDPInterface {
@@ -139,7 +152,7 @@ struct UdpInterfaceImpl : public udp_interface::UDPInterface {
   }
   tl::optional<udp_interface::IncomingMessage> receive_packet() {
     auto result = network_simulator.receive_packet(endpoint);
-    return network_simulator.receive_packet(endpoint);
+    return result;
   }
 };
 }  // namespace utils

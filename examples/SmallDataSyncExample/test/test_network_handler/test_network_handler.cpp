@@ -3,84 +3,8 @@
 #include <functional>
 #include <queue>
 
+#include "../utils.h"
 #include "foo.h"
-
-struct IPAddressImpl : public udp_interface::IPAddress {
-  unsigned int address;
-
-  IPAddressImpl(unsigned int address) : address(address) {}
-
-  bool operator==(const udp_interface::IPAddress& other) const override {
-    return address == ((IPAddressImpl&)other).address;
-  }
-  bool operator!=(const udp_interface::IPAddress& other) const override {
-    return !(this->operator==(other));
-  }
-  bool operator<(const udp_interface::IPAddress& other) const override {
-    return address < ((IPAddressImpl&)other).address;
-  }
-
-  std::string to_string() const override { return std::to_string(address); }
-};
-
-struct NetworkSimulator {
- private:
-  std::map<udp_interface::Endpoint, std::queue<udp_interface::IncomingMessage>>
-      endpoint_to_buffer;
-
- public:
-  void register_endpoint(udp_interface::Endpoint endpoint) {
-    endpoint_to_buffer[endpoint] = std::queue<udp_interface::IncomingMessage>();
-  }
-
-  void send_packet(udp_interface::Endpoint sender,
-                   udp_interface::Endpoint receiver, std::string packet) {
-    auto incoming_message = udp_interface::IncomingMessage(sender, packet);
-    endpoint_to_buffer.at(receiver).push(incoming_message);
-  }
-
-  bool is_incoming_packet_available(udp_interface::Endpoint receiver) {
-    return !endpoint_to_buffer.at(receiver).empty();
-  }
-
-  tl::optional<udp_interface::IncomingMessage> receive_packet(
-      udp_interface::Endpoint receiver) {
-    if (!is_incoming_packet_available(receiver)) {
-      return {};
-    }
-
-    auto result = endpoint_to_buffer.at(receiver).front();
-    endpoint_to_buffer.at(receiver).pop();
-
-    return result;
-  }
-};
-
-struct UdpInterfaceImpl : public udp_interface::UDPInterface {
-  udp_interface::Endpoint& endpoint;
-  NetworkHandler& network_handler;
-  NetworkSimulator& network_simulator;
-
-  UdpInterfaceImpl(udp_interface::Endpoint& endpoint,
-                   NetworkHandler& network_handler,
-                   NetworkSimulator& network_simulator)
-      : endpoint(endpoint),
-        network_handler(network_handler),
-        network_simulator(network_simulator) {}
-
-  bool send_packet(udp_interface::Endpoint receiver, std::string packet) {
-    network_simulator.send_packet(endpoint, receiver, packet);
-    return true;
-  }
-
-  bool is_incoming_packet_available() {
-    return network_simulator.is_incoming_packet_available(endpoint);
-  }
-  tl::optional<udp_interface::IncomingMessage> receive_packet() {
-    auto result = network_simulator.receive_packet(endpoint);
-    return network_simulator.receive_packet(endpoint);
-  }
-};
 
 struct NetworkMessageImpl : public NetworkMessage {
   virtual std::shared_ptr<data_object::GenericValue> to_data_object() const {
@@ -117,18 +41,19 @@ struct NetworkHandlerDelegateImpl : public NetworkHandlerDelegate {
 };
 
 void basic_network_handler_test() {
-  auto network_simulator = NetworkSimulator();
+  auto network_simulator = utils::NetworkSimulator();
 
-  auto sender = udp_interface::Endpoint(std::make_shared<IPAddressImpl>(0), 0);
+  auto sender =
+      udp_interface::Endpoint(std::make_shared<utils::IPAddressImpl>(0), 0);
   auto sender_network_handler = NetworkHandler();
-  auto sender_udp_interface = std::make_shared<UdpInterfaceImpl>(
+  auto sender_udp_interface = std::make_shared<utils::UdpInterfaceImpl>(
       sender, sender_network_handler, network_simulator);
   sender_network_handler.set_udp_interface(sender_udp_interface);
 
   auto receiver =
-      udp_interface::Endpoint(std::make_shared<IPAddressImpl>(1), 0);
+      udp_interface::Endpoint(std::make_shared<utils::IPAddressImpl>(1), 0);
   auto receiver_network_handler = NetworkHandler();
-  auto receiver_udp_interface = std::make_shared<UdpInterfaceImpl>(
+  auto receiver_udp_interface = std::make_shared<utils::UdpInterfaceImpl>(
       receiver, receiver_network_handler, network_simulator);
   receiver_network_handler.set_udp_interface(receiver_udp_interface);
 

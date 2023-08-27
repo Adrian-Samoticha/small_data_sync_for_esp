@@ -32,29 +32,30 @@ bool ActiveNetworkMessage::decrement_retries() {
 }
 
 unsigned int NetworkHandler::get_next_active_message_id() {
-  auto to_be_returned = next_active_message_id;
+  const auto to_be_returned = next_active_message_id;
 
   next_active_message_id = (next_active_message_id + 1) & 0xffffff;
 
   return to_be_returned;
 }
 
-bool NetworkHandler::send_active_message(ActiveNetworkMessage& message) {
-  auto endpoint = message.get_endpoint();
+bool NetworkHandler::send_active_message(
+    const ActiveNetworkMessage& message) const {
+  const auto endpoint = message.get_endpoint();
 
-  auto message_data_object = message.to_data_object();
-  auto packet_data_object = data_object::create_array({
+  const auto message_data_object = message.to_data_object();
+  const auto packet_data_object = data_object::create_array({
       data_object::create_string_value("msg"),
       data_object::create_number_value((int)message.get_message_id()),
       message_data_object,
   });
 
-  auto codec = message.get_codec();
-  auto serialized_packet = codec->encode(packet_data_object);
+  const auto codec = message.get_codec();
+  const auto serialized_packet = codec->encode(packet_data_object);
 
-  auto format = codec->get_format();
-  auto format_byte = get_format_byte_from_data_format(format);
-  auto packet = (char)format_byte + serialized_packet;
+  const auto format = codec->get_format();
+  const auto format_byte = get_format_byte_from_data_format(format);
+  const auto packet = (char)format_byte + serialized_packet;
 
   return udp_interface->send_packet(endpoint, packet);
 }
@@ -79,16 +80,16 @@ void NetworkHandler::send_active_messages() {
 
 tl::optional<std::shared_ptr<Codec>>
 NetworkHandler::get_codec_from_incoming_message(
-    udp_interface::IncomingMessage incoming_message) const {
+    const udp_interface::IncomingMessage incoming_message) const {
   if (incoming_message.data.length() == 0) {
     return {};
   }
 
-  auto codec_byte = incoming_message.data.at(0);
-  auto codec_optional = get_data_format_from_format_byte(codec_byte);
+  const auto codec_byte = incoming_message.data.at(0);
+  const auto codec_optional = get_data_format_from_format_byte(codec_byte);
 
   if (codec_optional.has_value()) {
-    auto codec_enum = codec_optional.value();
+    const auto codec_enum = codec_optional.value();
 
     return create_codec_from_format(codec_enum);
   }
@@ -98,8 +99,8 @@ NetworkHandler::get_codec_from_incoming_message(
 
 tl::optional<std::shared_ptr<data_object::GenericValue>>
 NetworkHandler::get_data_object_from_incoming_message(
-    udp_interface::IncomingMessage incoming_message,
-    std::shared_ptr<Codec> codec) const {
+    const udp_interface::IncomingMessage incoming_message,
+    const std::shared_ptr<Codec> codec) const {
   if (incoming_message.data.length() == 0) {
     return {};
   }
@@ -116,7 +117,7 @@ NetworkHandler::get_data_object_from_incoming_message(
   return decoded_message;
 }
 
-void NetworkHandler::on_received_ack(unsigned int message_id) {
+void NetworkHandler::on_received_ack(const unsigned int message_id) {
   auto it = active_messages.begin();
   while (it != active_messages.end()) {
     if (it->get_message_id() == message_id) {
@@ -131,36 +132,37 @@ void NetworkHandler::on_received_ack(unsigned int message_id) {
   }
 }
 
-void NetworkHandler::send_ack(unsigned int message_id,
-                              udp_interface::Endpoint& endpoint,
-                              std::shared_ptr<Codec> codec) {
-  auto data = data_object::create_array({
+void NetworkHandler::send_ack(const unsigned int message_id,
+                              const udp_interface::Endpoint& endpoint,
+                              const std::shared_ptr<Codec> codec) const {
+  const auto data = data_object::create_array({
       data_object::create_string_value("ack"),
       data_object::create_number_value((int)message_id),
   });
-  auto encoded = codec->encode(data);
-  auto format = codec->get_format();
-  auto format_byte = get_format_byte_from_data_format(format);
-  auto packet = (char)format_byte + encoded;
+  const auto encoded = codec->encode(data);
+  const auto format = codec->get_format();
+  const auto format_byte = get_format_byte_from_data_format(format);
+  const auto packet = (char)format_byte + encoded;
   udp_interface->send_packet(endpoint, packet);
 }
 
 void NetworkHandler::handle_decoded_message(
-    std::shared_ptr<data_object::GenericValue> decoded_message,
-    udp_interface::Endpoint& endpoint, std::shared_ptr<Codec> codec) {
+    const std::shared_ptr<data_object::GenericValue> decoded_message,
+    const udp_interface::Endpoint& endpoint,
+    const std::shared_ptr<Codec> codec) {
   if (decoded_message->is_array()) {
-    auto array_items = decoded_message->array_items().value();
+    const auto array_items = decoded_message->array_items().value();
     if (array_items->size() == 0) {
       return;
     }
 
-    auto type = array_items->at(0)->string_value().value_or("");
+    const auto type = array_items->at(0)->string_value().value_or("");
 
     if (type == "ack") {
       if (array_items->size() < 2) {
         return;
       }
-      auto message_id = array_items->at(1)->int_value().value_or(-1);
+      const auto message_id = array_items->at(1)->int_value().value_or(-1);
       if (message_id < 0) {
         return;
       }
@@ -170,7 +172,7 @@ void NetworkHandler::handle_decoded_message(
       if (array_items->size() < 3) {
         return;
       }
-      auto message_id = array_items->at(1)->int_value().value_or(-1);
+      const auto message_id = array_items->at(1)->int_value().value_or(-1);
       if (message_id < 0) {
         return;
       }
@@ -183,7 +185,7 @@ void NetworkHandler::handle_decoded_message(
       update_message_receive_time(endpoint, message_id);
 
       if (!message_already_handled) {
-        auto decoded_message =
+        const auto decoded_message =
             IncomingDecodedMessage(endpoint, array_items->at(2));
         delegate->on_message_received(decoded_message);
       }
@@ -196,35 +198,36 @@ void NetworkHandler::handle_packet_reception() {
     return;
   }
 
-  auto incoming_message_optional = udp_interface->receive_packet();
+  const auto incoming_message_optional = udp_interface->receive_packet();
 
   if (!incoming_message_optional.has_value()) {
     return;
   }
 
-  auto incoming_message = incoming_message_optional.value();
-  auto codec_optional = get_codec_from_incoming_message(incoming_message);
+  const auto incoming_message = incoming_message_optional.value();
+  const auto codec_optional = get_codec_from_incoming_message(incoming_message);
 
   if (!codec_optional.has_value()) {
     return;
   }
 
-  auto codec = codec_optional.value();
-  auto decoded_message_optional =
+  const auto codec = codec_optional.value();
+  const auto decoded_message_optional =
       get_data_object_from_incoming_message(incoming_message, codec);
 
   if (!decoded_message_optional.has_value()) {
     return;
   }
 
-  auto decoded_message = decoded_message_optional.value();
+  const auto decoded_message = decoded_message_optional.value();
 
   handle_decoded_message(decoded_message, incoming_message.endpoint, codec);
 }
 
 tl::optional<uint32_t> NetworkHandler::get_message_receive_time(
-    udp_interface::Endpoint endpoint, unsigned int message_id) const {
-  auto key = std::make_pair(endpoint, message_id);
+    const udp_interface::Endpoint endpoint,
+    const unsigned int message_id) const {
+  const auto key = std::make_pair(endpoint, message_id);
 
   if (message_receive_times.count(key) == 0) {
     return {};
@@ -234,8 +237,8 @@ tl::optional<uint32_t> NetworkHandler::get_message_receive_time(
 }
 
 void NetworkHandler::update_message_receive_time(
-    udp_interface::Endpoint endpoint, unsigned int message_id) {
-  auto key = std::make_pair(endpoint, message_id);
+    const udp_interface::Endpoint endpoint, const unsigned int message_id) {
+  const auto key = std::make_pair(endpoint, message_id);
   message_receive_times[key] = time_in_deciseconds;
 }
 
@@ -251,41 +254,41 @@ void NetworkHandler::remove_expired_message_receive_times() {
   }
 }
 
-void NetworkHandler::send_message(std::shared_ptr<NetworkMessage> message,
-                                  udp_interface::Endpoint endpoint,
-                                  unsigned int max_retries,
-                                  std::shared_ptr<Codec> codec) {
-  auto active_network_message = ActiveNetworkMessage(
+void NetworkHandler::send_message(const std::shared_ptr<NetworkMessage> message,
+                                  const udp_interface::Endpoint endpoint,
+                                  const unsigned int max_retries,
+                                  const std::shared_ptr<Codec> codec) {
+  const auto active_network_message = ActiveNetworkMessage(
       message, endpoint, codec, get_next_active_message_id(), max_retries);
   active_messages.push_back(active_network_message);
 
   send_active_message(active_network_message);
 }
 
-void NetworkHandler::send_message(std::shared_ptr<NetworkMessage> message,
-                                  udp_interface::Endpoint endpoint,
-                                  unsigned int max_retries) {
+void NetworkHandler::send_message(const std::shared_ptr<NetworkMessage> message,
+                                  const udp_interface::Endpoint endpoint,
+                                  const unsigned int max_retries) {
   send_message(message, endpoint, max_retries,
                create_codec_from_format(default_data_format));
 }
 
 void NetworkHandler::set_delegate(
-    std::shared_ptr<NetworkHandlerDelegate> new_delegate) {
+    const std::shared_ptr<NetworkHandlerDelegate> new_delegate) {
   delegate = new_delegate;
 }
 
 void NetworkHandler::set_udp_interface(
-    std::shared_ptr<udp_interface::UDPInterface> new_interface) {
+    const std::shared_ptr<udp_interface::UDPInterface> new_interface) {
   udp_interface = new_interface;
 }
 
 void NetworkHandler::set_default_data_format(
-    DataFormat new_default_data_format) {
+    const DataFormat new_default_data_format) {
   default_data_format = new_default_data_format;
 }
 
 void NetworkHandler::set_max_message_receive_time_in_deciseconds(
-    uint32_t new_max_time) {
+    const uint32_t new_max_time) {
   max_message_receive_time_in_deciseconds = new_max_time;
 }
 

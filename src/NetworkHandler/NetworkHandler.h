@@ -60,54 +60,58 @@ struct NetworkHandler {
 
   unsigned int get_next_active_message_id();
 
-  bool send_active_message(ActiveNetworkMessage& message);
+  bool send_active_message(const ActiveNetworkMessage& message) const;
 
   void send_active_messages();
 
   tl::optional<std::shared_ptr<Codec>> get_codec_from_incoming_message(
-      udp_interface::IncomingMessage incoming_message) const;
+      const udp_interface::IncomingMessage incoming_message) const;
 
   tl::optional<std::shared_ptr<data_object::GenericValue>>
   get_data_object_from_incoming_message(
-      udp_interface::IncomingMessage incoming_message,
-      std::shared_ptr<Codec> codec) const;
+      const udp_interface::IncomingMessage incoming_message,
+      const std::shared_ptr<Codec> codec) const;
 
-  void on_received_ack(unsigned int message_id);
+  void on_received_ack(const unsigned int message_id);
 
-  void send_ack(unsigned int message_id, udp_interface::Endpoint& endpoint,
-                std::shared_ptr<Codec> codec);
+  void send_ack(const unsigned int message_id,
+                const udp_interface::Endpoint& endpoint,
+                const std::shared_ptr<Codec> codec) const;
 
   void handle_decoded_message(
-      std::shared_ptr<data_object::GenericValue> decoded_message,
-      udp_interface::Endpoint& endpoint, std::shared_ptr<Codec> codec);
+      const std::shared_ptr<data_object::GenericValue> decoded_message,
+      const udp_interface::Endpoint& endpoint,
+      const std::shared_ptr<Codec> codec);
 
   void handle_packet_reception();
 
   tl::optional<uint32_t> get_message_receive_time(
-      udp_interface::Endpoint endpoint, unsigned int message_id) const;
+      const udp_interface::Endpoint endpoint,
+      const unsigned int message_id) const;
 
-  void update_message_receive_time(udp_interface::Endpoint endpoint,
-                                   unsigned int message_id);
+  void update_message_receive_time(const udp_interface::Endpoint endpoint,
+                                   const unsigned int message_id);
 
   void remove_expired_message_receive_times();
 
  public:
-  void send_message(std::shared_ptr<NetworkMessage> message,
-                    udp_interface::Endpoint endpoint, unsigned int max_retries,
-                    std::shared_ptr<Codec> codec);
+  void send_message(const std::shared_ptr<NetworkMessage> message,
+                    const udp_interface::Endpoint endpoint,
+                    const unsigned int max_retries,
+                    const std::shared_ptr<Codec> codec);
 
-  void send_message(std::shared_ptr<NetworkMessage> message,
-                    udp_interface::Endpoint endpoint,
-                    unsigned int max_retries = 100);
+  void send_message(const std::shared_ptr<NetworkMessage> message,
+                    const udp_interface::Endpoint endpoint,
+                    const unsigned int max_retries = 100);
 
-  void set_delegate(std::shared_ptr<NetworkHandlerDelegate> new_delegate);
+  void set_delegate(const std::shared_ptr<NetworkHandlerDelegate> new_delegate);
 
   void set_udp_interface(
-      std::shared_ptr<udp_interface::UDPInterface> new_interface);
+      const std::shared_ptr<udp_interface::UDPInterface> new_interface);
 
-  void set_default_data_format(DataFormat new_default_data_format);
+  void set_default_data_format(const DataFormat new_default_data_format);
 
-  void set_max_message_receive_time_in_deciseconds(uint32_t new_max_time);
+  void set_max_message_receive_time_in_deciseconds(const uint32_t new_max_time);
 
   void on_100_ms_passed();
   void heartbeat();

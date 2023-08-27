@@ -67,8 +67,6 @@ struct NumberValue : public GenericValue {
  public:
   NumberValue(double value) : value(value) {}
 
-  NumberValue(int value) { this->value = (double)value; }
-
   bool is_number() const override { return true; }
   tl::optional<double> number_value() const override { return value; }
   tl::optional<int> int_value() const override { return std::round(value); }
@@ -249,8 +247,6 @@ struct Object : public GenericValue {
 std::shared_ptr<GenericValue> create_null_value();
 
 std::shared_ptr<GenericValue> create_number_value(double value);
-
-std::shared_ptr<GenericValue> create_number_value(int value);
 
 std::shared_ptr<GenericValue> create_bool_value(bool value);
 

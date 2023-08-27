@@ -9,10 +9,6 @@ std::shared_ptr<GenericValue> create_number_value(double value) {
   return std::make_shared<NumberValue>(value);
 }
 
-std::shared_ptr<GenericValue> create_number_value(int value) {
-  return std::make_shared<NumberValue>(value);
-}
-
 std::shared_ptr<GenericValue> create_bool_value(bool value) {
   return std::make_shared<BoolValue>(value);
 }

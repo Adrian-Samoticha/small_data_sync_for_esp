@@ -8,6 +8,8 @@
 
 #include "foo.h"
 
+#define DEBUG_PRINT false
+
 namespace utils {
 std::string generate_random_string() {
   auto length = std::rand() % 32;
@@ -102,27 +104,54 @@ struct NetworkSimulator {
 
   void send_packet(udp_interface::Endpoint sender,
                    udp_interface::Endpoint receiver, std::string packet) {
+#if DEBUG_PRINT
+    TEST_PRINTF("Sending packet \"%s\" from %s to %s...", packet.c_str(),
+                sender.to_string().c_str(), receiver.to_string().c_str());
+#endif
     if (random_double() < packet_loss_rate) {
-      // Packet lost.
+#if DEBUG_PRINT
+      TEST_PRINTF("lost.\n", -1);
+#endif
       return;
     }
 
     auto incoming_message = udp_interface::IncomingMessage(sender, packet);
     endpoint_to_buffer.at(receiver).push(incoming_message);
+
+#if DEBUG_PRINT
+    TEST_PRINTF("succeeded.\n", -1);
+#endif
   }
 
   bool is_incoming_packet_available(udp_interface::Endpoint receiver) {
-    return !endpoint_to_buffer.at(receiver).empty();
+    auto result = !endpoint_to_buffer.at(receiver).empty();
+
+#if DEBUG_PRINT
+    TEST_PRINTF("Checking if packet is available for %s: %s\n",
+                receiver.to_string().c_str(), result ? "true" : "false");
+#endif
+
+    return result;
   }
 
   tl::optional<udp_interface::IncomingMessage> receive_packet(
       udp_interface::Endpoint receiver) {
     if (!is_incoming_packet_available(receiver)) {
+#if DEBUG_PRINT
+      TEST_PRINTF("Not receiving packet any for %s: (%s, %s)\n",
+                  receiver.to_string().c_str());
+#endif
       return {};
     }
 
     auto result = endpoint_to_buffer.at(receiver).front();
     endpoint_to_buffer.at(receiver).pop();
+
+#if DEBUG_PRINT
+    TEST_PRINTF("Receiving packet for %s: (%s, %s)\n",
+                receiver.to_string().c_str(), result.data.c_str(),
+                result.endpoint.to_string().c_str());
+#endif
 
     return result;
   }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <vector>
 
 #include "Codec/Codec.h"
@@ -112,6 +113,11 @@ struct NetworkHandler {
   void set_default_data_format(const DataFormat new_default_data_format);
 
   void set_max_message_receive_time_in_deciseconds(const uint32_t new_max_time);
+
+  void cancel_active_messages(
+      const std::function<
+          bool(const std::shared_ptr<data_object::GenericValue>)>
+          filter);
 
   void on_100_ms_passed();
   void heartbeat();

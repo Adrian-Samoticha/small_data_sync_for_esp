@@ -38,6 +38,10 @@ struct Endpoint {
 
     return this->ip < other.ip || this->port < other.port;
   };
+
+  std::string to_string() const {
+    return ip->to_string() + ":" + std::to_string(port);
+  }
 };
 
 struct IncomingMessage {
@@ -56,4 +60,4 @@ struct UDPInterface {
 
   virtual ~UDPInterface() = default;
 };
-}
+}  // namespace udp_interface

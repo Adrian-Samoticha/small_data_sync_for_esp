@@ -116,7 +116,7 @@ struct NetworkHandler {
 
   void cancel_active_messages(
       const std::function<
-          bool(const std::shared_ptr<data_object::GenericValue>)>
+          bool(const std::shared_ptr<data_object::GenericValue> info)>
           filter);
 
   void on_100_ms_passed();

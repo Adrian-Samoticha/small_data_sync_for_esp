@@ -293,7 +293,8 @@ void NetworkHandler::set_max_message_receive_time_in_deciseconds(
 }
 
 void NetworkHandler::cancel_active_messages(
-    const std::function<bool(const std::shared_ptr<data_object::GenericValue>)>
+    const std::function<
+        bool(const std::shared_ptr<data_object::GenericValue> info)>
         filter) {
   auto it = active_messages.begin();
   while (it != active_messages.end()) {

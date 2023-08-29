@@ -57,6 +57,8 @@ bool NetworkHandler::send_active_message(
   const auto format_byte = get_format_byte_from_data_format(format);
   const auto packet = (char)format_byte + serialized_packet;
 
+  delegate->on_message_emitted(message.get_network_message());
+
   return udp_interface->send_packet(endpoint, packet);
 }
 

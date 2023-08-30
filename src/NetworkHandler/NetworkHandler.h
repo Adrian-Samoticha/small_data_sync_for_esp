@@ -19,10 +19,10 @@ struct ActiveNetworkMessage {
   unsigned int retries_left;
 
  public:
-  ActiveNetworkMessage(std::shared_ptr<NetworkMessage> message,
-                       udp_interface::Endpoint endpoint,
-                       std::shared_ptr<Codec> codec, unsigned int message_id,
-                       unsigned int retries_left)
+  ActiveNetworkMessage(const std::shared_ptr<NetworkMessage> message,
+                       const udp_interface::Endpoint endpoint,
+                       const std::shared_ptr<Codec> codec,
+                       unsigned int message_id, unsigned int retries_left)
       : message(message),
         endpoint(endpoint),
         codec(codec),

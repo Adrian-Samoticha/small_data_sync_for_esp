@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../MessageType/MessageType.h"
 #include "../UDPInterface/UDPInterface.h"
 #include "DataObject/DataObject.h"
 #include "NetworkMessage/NetworkMessage.h"
@@ -7,10 +8,12 @@
 struct IncomingDecodedMessage {
   udp_interface::Endpoint sender;
   std::shared_ptr<data_object::GenericValue> data_object;
+  MessageType message_type;
 
   IncomingDecodedMessage(udp_interface::Endpoint sender,
-                         std::shared_ptr<data_object::GenericValue> data_object)
-      : sender(sender), data_object(data_object) {}
+                         std::shared_ptr<data_object::GenericValue> data_object,
+                         MessageType message_type)
+      : sender(sender), data_object(data_object), message_type(message_type) {}
 };
 
 struct NetworkHandlerDelegate {

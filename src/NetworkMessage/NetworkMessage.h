@@ -3,9 +3,12 @@
 #include <memory>
 
 #include "DataObject/DataObject.h"
+#include "NetworkHandler/MessageType/MessageType.h"
 
 struct NetworkMessage {
   virtual std::shared_ptr<data_object::GenericValue> to_data_object() const = 0;
+
+  virtual MessageType get_message_type() const { return MessageType::MSG; }
 
   virtual void on_send_succeeded() const {}
 

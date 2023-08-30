@@ -1,6 +1,7 @@
 #include "NetworkHandler.h"
 
 #include "DataFormat/DataFormat_util.h"
+#include "MessageType/MessageType_util.h"
 
 std::shared_ptr<NetworkMessage> ActiveNetworkMessage::get_network_message()
     const {
@@ -44,8 +45,10 @@ bool NetworkHandler::send_active_message(
   const auto endpoint = message.get_endpoint();
 
   const auto message_data_object = message.to_data_object();
+  const auto message_type = message.get_network_message()->get_message_type();
+  const auto message_type_string = get_string_from_message_type(message_type);
   const auto packet_data_object = data_object::create_array({
-      data_object::create_string_value("msg"),
+      data_object::create_string_value(message_type_string),
       data_object::create_number_value((int)message.get_message_id()),
       message_data_object,
   });
@@ -170,7 +173,7 @@ void NetworkHandler::handle_decoded_message(
       }
       on_received_ack((unsigned int)message_id);
 
-    } else if (type == "msg") {
+    } else if (type == "msg" || type == "sync") {
       if (array_items->size() < 3) {
         return;
       }
@@ -186,9 +189,12 @@ void NetworkHandler::handle_decoded_message(
 
       update_message_receive_time(endpoint, message_id);
 
+      const auto message_type =
+          type == "msg" ? MessageType::MSG : MessageType::SYNC;
+
       if (!message_already_handled) {
         const auto decoded_message =
-            IncomingDecodedMessage(endpoint, array_items->at(2));
+            IncomingDecodedMessage(endpoint, array_items->at(2), message_type);
         delegate->on_message_received(decoded_message);
       }
     }

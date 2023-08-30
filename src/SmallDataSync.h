@@ -6,6 +6,7 @@
 #include "DataObject/DataObject.h"
 #include "NetworkHandler/NetworkHandler.h"
 #include "Synchronizable/Synchronizable.h"
+#include "Synchronizer/Synchronizer.h"
 
 struct SmallDataSync {
  public:

@@ -95,15 +95,16 @@ struct NetworkSimulator {
       endpoint_to_buffer;
   double packet_loss_rate = 0.0;
 
-  double random_double() { return std::rand() / (RAND_MAX + 1.0); }
+  double random_double() const { return std::rand() / (RAND_MAX + 1.0); }
 
  public:
-  void register_endpoint(udp_interface::Endpoint endpoint) {
+  void register_endpoint(const udp_interface::Endpoint endpoint) {
     endpoint_to_buffer[endpoint] = std::queue<udp_interface::IncomingMessage>();
   }
 
-  void send_packet(udp_interface::Endpoint sender,
-                   udp_interface::Endpoint receiver, std::string packet) {
+  void send_packet(const udp_interface::Endpoint sender,
+                   const udp_interface::Endpoint receiver,
+                   const std::string packet) {
 #if DEBUG_PRINT
     TEST_PRINTF("Sending packet \"%s\" from %s to %s...", packet.c_str(),
                 sender.to_string().c_str(), receiver.to_string().c_str());
@@ -115,7 +116,8 @@ struct NetworkSimulator {
       return;
     }
 
-    auto incoming_message = udp_interface::IncomingMessage(sender, packet);
+    const auto incoming_message =
+        udp_interface::IncomingMessage(sender, packet);
     endpoint_to_buffer.at(receiver).push(incoming_message);
 
 #if DEBUG_PRINT
@@ -123,7 +125,8 @@ struct NetworkSimulator {
 #endif
   }
 
-  bool is_incoming_packet_available(udp_interface::Endpoint receiver) {
+  bool is_incoming_packet_available(
+      const udp_interface::Endpoint receiver) const {
     auto result = !endpoint_to_buffer.at(receiver).empty();
 
 #if DEBUG_PRINT
@@ -135,7 +138,7 @@ struct NetworkSimulator {
   }
 
   tl::optional<udp_interface::IncomingMessage> receive_packet(
-      udp_interface::Endpoint receiver) {
+      const udp_interface::Endpoint receiver) {
     if (!is_incoming_packet_available(receiver)) {
 #if DEBUG_PRINT
       TEST_PRINTF("Not receiving packet any for %s: (%s, %s)\n",
@@ -144,7 +147,7 @@ struct NetworkSimulator {
       return {};
     }
 
-    auto result = endpoint_to_buffer.at(receiver).front();
+    const auto result = endpoint_to_buffer.at(receiver).front();
     endpoint_to_buffer.at(receiver).pop();
 
 #if DEBUG_PRINT
@@ -156,7 +159,9 @@ struct NetworkSimulator {
     return result;
   }
 
-  void set_packet_loss_rate(double new_rate) { packet_loss_rate = new_rate; }
+  void set_packet_loss_rate(const double new_rate) {
+    packet_loss_rate = new_rate;
+  }
 };
 
 struct UdpInterfaceImpl : public udp_interface::UDPInterface {
@@ -171,15 +176,17 @@ struct UdpInterfaceImpl : public udp_interface::UDPInterface {
         network_handler(network_handler),
         network_simulator(network_simulator) {}
 
-  bool send_packet(udp_interface::Endpoint receiver, std::string packet) {
+  bool send_packet(const udp_interface::Endpoint receiver,
+                   const std::string packet) override {
     network_simulator.send_packet(endpoint, receiver, packet);
+
     return true;
   }
 
-  bool is_incoming_packet_available() {
+  bool is_incoming_packet_available() override {
     return network_simulator.is_incoming_packet_available(endpoint);
   }
-  tl::optional<udp_interface::IncomingMessage> receive_packet() {
+  tl::optional<udp_interface::IncomingMessage> receive_packet() override {
     return network_simulator.receive_packet(endpoint);
   }
 };

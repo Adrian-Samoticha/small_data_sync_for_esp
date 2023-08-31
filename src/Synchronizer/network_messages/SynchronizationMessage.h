@@ -22,12 +22,12 @@ struct SynchronizationMessage : public NetworkMessage {
 
   std::shared_ptr<data_object::GenericValue> to_data_object() const override {
     return data_object::create_array({
-        // TODO: fix this
-        data_object::create_string_value("sync"),
         data_object::create_string_value(synchronizable->get_name()),
         synchronizable->to_data_object(),
     });
   }
+
+  MessageType get_message_type() const override { return MessageType::SYNC; }
 
   void on_send_succeeded() const override {}
 

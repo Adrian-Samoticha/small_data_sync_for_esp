@@ -22,6 +22,11 @@ struct Synchronizer : public std::enable_shared_from_this<Synchronizer> {
       const std::shared_ptr<data_object::GenericValue> message_info,
       const std::shared_ptr<Synchronizable> synchronizable) const;
 
+  tl::optional<std::shared_ptr<Synchronizable>>
+  get_synchronizable_instance_for_endpoint(
+      const udp_interface::Endpoint endpoint,
+      const std::string synchronizable_name) const;
+
   void init();
 
  public:
@@ -39,9 +44,19 @@ struct Synchronizer : public std::enable_shared_from_this<Synchronizer> {
   void for_each_endpoint(
       const std::function<void(const udp_interface::Endpoint)>& func) const;
 
-  tl::optional<std::shared_ptr<Synchronizable>> get_synchronizable_for_endpoint(
+  template <typename T = Synchronizable>
+  tl::optional<std::shared_ptr<T>> get_synchronizable_for_endpoint(
       const udp_interface::Endpoint endpoint,
-      const std::string synchronizable_name);
+      const std::string synchronizable_name) const {
+    const auto instance =
+        get_synchronizable_instance_for_endpoint(endpoint, synchronizable_name);
+
+    if (instance.has_value()) {
+      return std::dynamic_pointer_cast<T>(instance.value());
+    }
+
+    return {};
+  }
 
   const std::shared_ptr<SynchronizerDelegate> get_delegate() const;
 

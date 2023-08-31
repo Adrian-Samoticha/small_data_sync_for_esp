@@ -29,6 +29,24 @@ bool Synchronizer::is_message_related_to_synchronizable(
   return true;
 }
 
+tl::optional<std::shared_ptr<Synchronizable>>
+Synchronizer::get_synchronizable_instance_for_endpoint(
+    const udp_interface::Endpoint endpoint,
+    const std::string synchronizable_name) const {
+  auto it = endpoint_to_synchronizables.find(endpoint);
+  if (it == endpoint_to_synchronizables.end()) {
+    return {};
+  }
+
+  for (const auto& synchronizable : it->second) {
+    if (synchronizable->get_name() == synchronizable_name) {
+      return synchronizable;
+    }
+  }
+
+  return {};
+}
+
 void Synchronizer::init() {
   auto network_handler_delegate =
       std::make_shared<NetworkHandlerDelegateImpl>(shared_from_this());
@@ -95,24 +113,6 @@ void Synchronizer::for_each_endpoint(
   for (const auto& endpoint_synchronizables : endpoint_to_synchronizables) {
     func(endpoint_synchronizables.first);
   }
-}
-
-tl::optional<std::shared_ptr<Synchronizable>>
-Synchronizer::get_synchronizable_for_endpoint(
-    const udp_interface::Endpoint endpoint,
-    const std::string synchronizable_name) {
-  auto it = endpoint_to_synchronizables.find(endpoint);
-  if (it == endpoint_to_synchronizables.end()) {
-    return {};
-  }
-
-  for (const auto& synchronizable : it->second) {
-    if (synchronizable->get_name() == synchronizable_name) {
-      return synchronizable;
-    }
-  }
-
-  return {};
 }
 
 const std::shared_ptr<SynchronizerDelegate> Synchronizer::get_delegate() const {

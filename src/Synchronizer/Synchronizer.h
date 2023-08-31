@@ -70,6 +70,8 @@ struct Synchronizer : public std::enable_shared_from_this<Synchronizer> {
 
   const NetworkHandler& get_network_handler() const;
 
+  void add_endpoint(const udp_interface::Endpoint endpoint);
+
   void remove_endpoint(const udp_interface::Endpoint endpoint);
 
   void on_100_ms_passed();

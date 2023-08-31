@@ -90,9 +90,7 @@ void Synchronizer::handle_synchronization_message(
     const std::string synchronizable_name,
     std::shared_ptr<data_object::GenericValue> data_object) {
   if (!is_endpoint_known(endpoint)) {
-    const auto initial_container =
-        delegate->create_initial_synchronizables_container();
-    endpoint_to_synchronizables[endpoint] = initial_container;
+    add_endpoint(endpoint);
   }
 
   const auto synchronizable =
@@ -131,6 +129,11 @@ void Synchronizer::set_udp_interface(
 
 const NetworkHandler& Synchronizer::get_network_handler() const {
   return *(&network_handler);
+}
+
+void Synchronizer::add_endpoint(const udp_interface::Endpoint endpoint) {
+  auto initial_container = delegate->create_initial_synchronizables_container();
+  endpoint_to_synchronizables[endpoint] = initial_container;
 }
 
 void Synchronizer::remove_endpoint(const udp_interface::Endpoint endpoint) {

@@ -68,6 +68,8 @@ struct Synchronizer : public std::enable_shared_from_this<Synchronizer> {
   void set_udp_interface(
       const std::shared_ptr<udp_interface::UDPInterface> udp_interface);
 
+  void set_default_data_format(const DataFormat new_default_data_format);
+
   const NetworkHandler& get_network_handler() const;
 
   void add_endpoint(const udp_interface::Endpoint endpoint);

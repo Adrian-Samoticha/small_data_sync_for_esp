@@ -121,6 +121,11 @@ void Synchronizer::set_udp_interface(
   network_handler.set_udp_interface(udp_interface);
 }
 
+void Synchronizer::set_default_data_format(
+    const DataFormat new_default_data_format) {
+  network_handler.set_default_data_format(new_default_data_format);
+}
+
 const NetworkHandler& Synchronizer::get_network_handler() const {
   return *(&network_handler);
 }

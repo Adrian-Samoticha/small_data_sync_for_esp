@@ -51,7 +51,7 @@ struct NetworkHandler {
   std::shared_ptr<NetworkHandlerDelegate> delegate =
       std::make_shared<EmptyNetworkHandlerDelegate>();
   std::shared_ptr<udp_interface::UDPInterface> udp_interface;
-  DataFormat default_data_format;
+  DataFormat default_data_format = DataFormat::MSGPACK;
   std::vector<ActiveNetworkMessage> active_messages;
   unsigned int next_active_message_id = 0;
   uint32_t time_in_deciseconds = 0;  // a decisecond is 100 ms

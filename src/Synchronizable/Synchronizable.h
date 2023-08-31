@@ -12,7 +12,7 @@ struct Synchronizable {
   virtual std::shared_ptr<data_object::GenericValue> to_data_object() const = 0;
 
   virtual bool apply_from_data_object(
-      std::shared_ptr<data_object::GenericValue> data_object) = 0;
+      const std::shared_ptr<data_object::GenericValue> data_object) = 0;
 
   virtual ~Synchronizable() = default;
 };

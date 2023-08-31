@@ -4,12 +4,6 @@
 
 namespace synchronizer {
 struct SynchronizerDelegate {
-  virtual std::vector<std::shared_ptr<Synchronizable>>::iterator
-  begin_synchronizables() = 0;
-
-  virtual std::vector<std::shared_ptr<Synchronizable>>::iterator
-  end_synchronizables() = 0;
-
   virtual std::vector<std::shared_ptr<Synchronizable>>
   create_initial_synchronizables_container() = 0;
 

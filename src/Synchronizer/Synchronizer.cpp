@@ -75,12 +75,6 @@ void Synchronizer::synchronize(
             std::make_shared<SynchronizationMessage>(synchronizable, endpoint,
                                                      shared_from_this());
 
-        network_handler.cancel_active_messages(
-            [this, synchronizable,
-             message](std::shared_ptr<data_object::GenericValue> data_object) {
-              return data_object == message->to_data_object();
-            });
-
         network_handler.send_message(message, endpoint, 100u);
       });
 }

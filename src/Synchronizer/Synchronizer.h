@@ -52,7 +52,10 @@ struct Synchronizer : public std::enable_shared_from_this<Synchronizer> {
         get_synchronizable_instance_for_endpoint(endpoint, synchronizable_name);
 
     if (instance.has_value()) {
-      return std::dynamic_pointer_cast<T>(instance.value());
+      const auto cast_value = std::dynamic_pointer_cast<T>(instance.value());
+      if (cast_value) {
+        return cast_value;
+      }
     }
 
     return {};

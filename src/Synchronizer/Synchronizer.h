@@ -4,9 +4,9 @@
 #include <memory>
 
 #include "NetworkHandler/NetworkHandler.h"
-#include "NetworkHandler/UDPInterface/UDPInterface.h"
 #include "Synchronizable/Synchronizable.h"
 #include "SynchronizerDelegate/SynchronizerDelegate.h"
+#include "interfaces/UDPInterface/UDPInterface.h"
 #include "optional/include/tl/optional.hpp"
 
 namespace synchronizer {

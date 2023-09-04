@@ -7,7 +7,7 @@
 #include "DataFormat/DataFormat.h"
 #include "NetworkHandlerDelegate/NetworkHandlerDelegate.h"
 #include "NetworkMessage/NetworkMessage.h"
-#include "UDPInterface/UDPInterface.h"
+#include "interfaces/UDPInterface/UDPInterface.h"
 #include "optional/include/tl/optional.hpp"
 
 struct ActiveNetworkMessage {

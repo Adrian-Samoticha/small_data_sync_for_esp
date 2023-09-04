@@ -1,9 +1,9 @@
 #pragma once
 
 #include "../Synchronizer.h"
-#include "NetworkHandler/UDPInterface/UDPInterface.h"
 #include "NetworkMessage/NetworkMessage.h"
 #include "Synchronizable/Synchronizable.h"
+#include "interfaces//UDPInterface/UDPInterface.h"
 
 struct SynchronizationMessage : public NetworkMessage {
  private:

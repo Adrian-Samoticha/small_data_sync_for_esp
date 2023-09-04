@@ -1,9 +1,9 @@
 #pragma once
 
 #include "../MessageType/MessageType.h"
-#include "../UDPInterface/UDPInterface.h"
 #include "DataObject/DataObject.h"
 #include "NetworkMessage/NetworkMessage.h"
+#include "interfaces//UDPInterface/UDPInterface.h"
 
 struct IncomingDecodedMessage {
   udp_interface::Endpoint sender;

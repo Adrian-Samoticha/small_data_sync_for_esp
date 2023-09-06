@@ -1,7 +1,7 @@
 #pragma once
 
+#include <deque>
 #include <functional>
-#include <vector>
 
 #include "Codec/Codec.h"
 #include "DataFormat/DataFormat.h"
@@ -52,7 +52,7 @@ struct NetworkHandler {
       std::make_shared<EmptyNetworkHandlerDelegate>();
   std::shared_ptr<udp_interface::UDPInterface> udp_interface;
   DataFormat default_data_format = DataFormat::MSGPACK;
-  std::vector<ActiveNetworkMessage> active_messages;
+  std::deque<ActiveNetworkMessage> active_messages;
   unsigned int next_active_message_id = 0;
   uint32_t time_in_deciseconds = 0;  // a decisecond is 100 ms
   std::map<std::pair<udp_interface::Endpoint, unsigned int>, uint32_t>

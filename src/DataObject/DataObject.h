@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #include <cmath>
 #include <map>
 #include <memory>
@@ -21,7 +23,7 @@ struct GenericValue {
   virtual bool is_object() const { return false; }
 
   virtual tl::optional<double> number_value() const { return {}; }
-  virtual tl::optional<int> int_value() const { return {}; }
+  virtual tl::optional<int64_t> int_value() const { return {}; }
   virtual tl::optional<bool> bool_value() const { return {}; }
   virtual const tl::optional<std::string> string_value() const { return {}; }
   virtual const tl::optional<std::shared_ptr<GenericValue::array>> array_items()
@@ -69,7 +71,7 @@ struct NumberValue : public GenericValue {
 
   bool is_number() const override { return true; }
   tl::optional<double> number_value() const override { return value; }
-  tl::optional<int> int_value() const override { return std::round(value); }
+  tl::optional<int64_t> int_value() const override { return std::round(value); }
 
   std::string to_debug_string() const override { return std::to_string(value); }
 

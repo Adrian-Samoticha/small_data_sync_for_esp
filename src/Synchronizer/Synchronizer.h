@@ -81,6 +81,8 @@ struct Synchronizer : public std::enable_shared_from_this<Synchronizer> {
 
   uint32_t get_group_name_hash() const;
 
+  void deregister_all_endpoints();
+
   void on_100_ms_passed();
   void heartbeat();
 };

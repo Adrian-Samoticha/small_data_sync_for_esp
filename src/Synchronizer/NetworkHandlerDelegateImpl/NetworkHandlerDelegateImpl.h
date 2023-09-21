@@ -30,6 +30,14 @@ struct NetworkHandlerDelegateImpl : public NetworkHandlerDelegate {
               group_name_hash, message.sender, name, array_items->at(2));
         }
       }
+
+      return;
+    }
+
+    if (message.message_type == MessageType::DEREG) {
+      synchronizer->remove_endpoint(message.sender);
+
+      return;
     }
   };
 

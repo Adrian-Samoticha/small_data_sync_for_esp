@@ -2,6 +2,7 @@
 
 #include "ErriezCRC32/ErriezCRC32.h"
 #include "NetworkHandlerDelegateImpl/NetworkHandlerDelegateImpl.h"
+#include "network_messages/DeregistrationMessage.h"
 #include "network_messages/SynchronizationMessage.h"
 
 namespace synchronizer {
@@ -151,11 +152,28 @@ void Synchronizer::remove_endpoint(const udp_interface::Endpoint endpoint) {
 }
 
 void Synchronizer::set_group_name(const std::string group_name) {
-  group_name_hash = crc32String(group_name.c_str());
+  auto new_group_name_hash = crc32String(group_name.c_str());
+
+  if (new_group_name_hash != group_name_hash) {
+    group_name_hash = new_group_name_hash;
+
+    deregister_all_endpoints();
+  }
+
   // TODO: update group name in MDNS handler
 }
 
 uint32_t Synchronizer::get_group_name_hash() const { return group_name_hash; }
+
+void Synchronizer::deregister_all_endpoints() {
+  for_each_endpoint([this](const udp_interface::Endpoint endpoint) {
+    auto deregistration_message = std::make_shared<DeregistrationMessage>();
+
+    network_handler.send_message(deregistration_message, endpoint, 100u);
+  });
+
+  endpoint_to_synchronizables.clear();
+}
 
 void Synchronizer::on_100_ms_passed() { network_handler.on_100_ms_passed(); }
 

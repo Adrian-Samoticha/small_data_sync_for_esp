@@ -22,6 +22,7 @@ struct SynchronizationMessage : public NetworkMessage {
 
   std::shared_ptr<data_object::GenericValue> to_data_object() const override {
     return data_object::create_array({
+        data_object::create_number_value(synchronizer->get_group_name_hash()),
         data_object::create_string_value(synchronizable->get_name()),
         synchronizable->to_data_object(),
     });

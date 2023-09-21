@@ -49,6 +49,10 @@ struct DelegateImpl : public synchronizer::SynchronizerDelegate {
 void basic_synchronizer_test() {
   const auto synchronizer = synchronizer::Synchronizer::create();
 
+  const auto group_name = "my group";
+  synchronizer->set_group_name(group_name);
+  const auto group_name_hash = synchronizer->get_group_name_hash();
+
   const auto delegate = std::make_shared<DelegateImpl>();
   synchronizer->set_delegate(delegate);
 
@@ -56,7 +60,8 @@ void basic_synchronizer_test() {
       udp_interface::Endpoint(std::make_shared<utils::IPAddressImpl>(0), 0);
 
   synchronizer->handle_synchronization_message(
-      sender, "SynchronizableMock", data_object::create_number_value(42));
+      group_name_hash, sender, "SynchronizableMock",
+      data_object::create_number_value(42));
 
   const auto synchronizable =
       synchronizer->get_synchronizable_for_endpoint<SynchronizableMock>(

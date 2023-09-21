@@ -17,6 +17,7 @@ struct Synchronizer : public std::enable_shared_from_this<Synchronizer> {
   std::map<udp_interface::Endpoint,
            std::vector<std::shared_ptr<Synchronizable>>>
       endpoint_to_synchronizables;
+  uint32_t group_name_hash;
 
   bool is_message_related_to_synchronizable(
       const std::shared_ptr<data_object::GenericValue> message_info,
@@ -35,7 +36,7 @@ struct Synchronizer : public std::enable_shared_from_this<Synchronizer> {
   void synchronize(const std::shared_ptr<Synchronizable> synchronizable);
 
   void handle_synchronization_message(
-      const udp_interface::Endpoint endpoint,
+      const uint32_t group_name_hash, const udp_interface::Endpoint endpoint,
       const std::string synchronizable_name,
       std::shared_ptr<data_object::GenericValue> data_object);
 
@@ -75,6 +76,10 @@ struct Synchronizer : public std::enable_shared_from_this<Synchronizer> {
   void add_endpoint(const udp_interface::Endpoint endpoint);
 
   void remove_endpoint(const udp_interface::Endpoint endpoint);
+
+  void set_group_name(const std::string group_name);
+
+  uint32_t get_group_name_hash() const;
 
   void on_100_ms_passed();
   void heartbeat();

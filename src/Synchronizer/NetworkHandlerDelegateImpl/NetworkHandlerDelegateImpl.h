@@ -23,10 +23,11 @@ struct NetworkHandlerDelegateImpl : public NetworkHandlerDelegate {
       if (data->is_array()) {
         auto array_items = data->array_items().value();
 
-        if (array_items->size() >= 2) {
-          auto name = array_items->at(0)->string_value().value_or("");
-          synchronizer->handle_synchronization_message(message.sender, name,
-                                                       array_items->at(1));
+        if (array_items->size() >= 3) {
+          auto group_name_hash = array_items->at(0)->int_value().value_or(0);
+          auto name = array_items->at(1)->string_value().value_or("");
+          synchronizer->handle_synchronization_message(
+              group_name_hash, message.sender, name, array_items->at(2));
         }
       }
     }

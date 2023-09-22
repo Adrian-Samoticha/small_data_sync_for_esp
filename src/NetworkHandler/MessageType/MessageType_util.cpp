@@ -11,6 +11,10 @@ tl::optional<MessageType> get_message_type_from_string(const char* type_str) {
     return MessageType::SYNC;
   }
 
+  if (strcmp(type_str, "dereg") == 0) {
+    return MessageType::DEREG;
+  }
+
   return {};
 }
 
@@ -21,6 +25,9 @@ std::string get_string_from_message_type(MessageType type) {
 
     case MessageType::SYNC:
       return std::string("sync");
+
+    case MessageType::DEREG:
+      return std::string("dereg");
 
     default:
       return std::string("msg");

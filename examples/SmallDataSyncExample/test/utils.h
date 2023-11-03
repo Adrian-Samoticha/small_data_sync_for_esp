@@ -2,9 +2,11 @@
 
 #include <unity.h>
 
+#include <algorithm>
 #include <cstdlib>
 #include <memory>
 #include <queue>
+#include <vector>
 
 #include "foo.h"
 
@@ -188,6 +190,211 @@ struct UdpInterfaceImpl : public udp_interface::UDPInterface {
   }
   tl::optional<udp_interface::IncomingMessage> receive_packet() override {
     return network_simulator.receive_packet(endpoint);
+  }
+};
+
+struct MDNSService {
+  udp_interface::Endpoint endpoint;
+  std::string service_name;
+  std::string protocol;
+  uint16_t port;
+
+  MDNSService(udp_interface::Endpoint endpoint, std::string service_name,
+              std::string protocol, uint16_t port)
+      : endpoint(endpoint),
+        service_name(service_name),
+        protocol(protocol),
+        port(port) {}
+
+  bool operator==(const MDNSService &other) const {
+    return endpoint == other.endpoint && service_name == other.service_name &&
+           protocol == other.protocol && port == other.port;
+  }
+
+  bool operator<(const MDNSService &other) const {
+    return std::tie(endpoint, service_name, protocol, port) <
+           std::tie(other.endpoint, other.service_name, other.protocol,
+                    other.port);
+  }
+};
+
+struct MDNSServiceQuery {
+  std::string service_name;
+  std::string protocol;
+  std::vector<MDNSService> found_services;
+
+  MDNSServiceQuery(std::string service_name, std::string protocol,
+                   std::vector<MDNSService> found_services)
+      : service_name(service_name),
+        protocol(protocol),
+        found_services(found_services) {}
+
+  /// @brief This constructor is required to allow this struct to be used in
+  /// std::map.
+  MDNSServiceQuery() {
+    service_name = "";
+    protocol = "";
+    found_services = {};
+  }
+
+  MDNSService at(size_t index) { return found_services.at(index); }
+
+  size_t size() { return found_services.size(); }
+};
+
+struct MDNSSimulator {
+ private:
+  std::map<udp_interface::Endpoint, std::string> endpoint_to_hostname;
+  std::map<udp_interface::Endpoint, std::vector<MDNSService>>
+      endpoint_to_services;
+  std::map<udp_interface::Endpoint, MDNSServiceQuery> endpoint_to_service_query;
+  std::map<MDNSService, std::string> service_to_service_txt;
+
+ public:
+  bool begin(udp_interface::Endpoint caller, const char *hostname) {
+    endpoint_to_hostname[caller] = std::string(hostname);
+
+#if DEBUG_PRINT
+    TEST_PRINTF("Beginning mDNS for %s (hostname: %s).\n",
+                caller.to_string().c_str(), hostname);
+#endif
+
+    return true;
+  }
+
+  bool add_service(udp_interface::Endpoint caller, const char *service_name,
+                   const char *protocol, uint16_t port) {
+    MDNSService service(caller, service_name, protocol, port);
+    endpoint_to_services[caller].push_back(service);
+
+    service_to_service_txt[service] = "";
+
+#if DEBUG_PRINT
+    TEST_PRINTF(
+        "Adding service for %s (service_name: %s, protocol: %s, port: %u).\n",
+        caller.to_string().c_str(), service_name, protocol, port);
+#endif
+
+    return true;
+  }
+
+  bool close(udp_interface::Endpoint caller) {
+    endpoint_to_hostname.erase(caller);
+    endpoint_to_services.erase(caller);
+    endpoint_to_service_query.erase(caller);
+
+    // remove service texts
+    for (auto it = service_to_service_txt.begin();
+         it != service_to_service_txt.end();) {
+      if (it->first.endpoint == caller) {
+        it = service_to_service_txt.erase(it);
+        continue;
+      }
+
+      ++it;
+    }
+
+#if DEBUG_PRINT
+    TEST_PRINTF("Closing mDNS for %s.\n", caller.to_string().c_str());
+#endif
+
+    return true;
+  }
+
+  std::string hostname(udp_interface::Endpoint caller, int index) {
+    return endpoint_to_service_query.at(caller).at(index).service_name;
+  }
+
+  udp_interface::Endpoint endpoint(udp_interface::Endpoint caller, int index) {
+    return endpoint_to_service_query.at(caller)
+        .found_services.at(index)
+        .endpoint;
+  }
+
+  bool add_service_text(udp_interface::Endpoint caller,
+                        const char *service_name, const char *protocol,
+                        const char *key, const char *value) {
+    const auto services = endpoint_to_services.at(caller);
+    const auto mdns_service = std::find_if(
+        services.begin(), services.end(), [&](const MDNSService &s) {
+          return s.service_name == service_name && s.protocol == protocol;
+        });
+
+    if (mdns_service != services.end()) {
+#if DEBUG_PRINT
+      TEST_PRINTF(
+          "Adding service text for %s (service_name: %s, protocol: %s, key: "
+          "%s, value: %s).\n",
+          caller.to_string().c_str(), service_name, protocol, key, value);
+#endif
+
+      std::stringstream stream;
+
+      stream << service_to_service_txt.at(*mdns_service).c_str() << key << '='
+             << value << ';';
+
+      service_to_service_txt[*mdns_service] = stream.str();
+
+      return true;
+    }
+
+#if DEBUG_PRINT
+    TEST_PRINTF(
+        "Not adding service text for %s (service not found) (service_name: %s, "
+        "protocol: %s, key: "
+        "%s, value: %s).\n",
+        caller.to_string().c_str(), service_name, protocol, key, value);
+#endif
+
+    return false;
+  }
+
+  void install_service_query(udp_interface::Endpoint caller,
+                             const char *service, const char *protocol,
+                             std::function<void()> on_data_received) {
+    const auto queried_service_name = service;
+
+    std::vector<MDNSService> found_services;
+
+    for (const auto &services : endpoint_to_services) {
+      for (const auto &service : services.second) {
+        if (service.service_name == queried_service_name &&
+            service.protocol == protocol) {
+          found_services.push_back(service);
+        }
+      }
+    }
+
+    MDNSServiceQuery query(service, protocol, found_services);
+
+    endpoint_to_service_query[caller] = query;
+
+#if DEBUG_PRINT
+    TEST_PRINTF(
+        "Installing service query for %s (service: %s, protocol: %s).\n",
+        caller.to_string().c_str(), service, protocol);
+#endif
+
+    on_data_received();
+  }
+
+  void remove_service_query(udp_interface::Endpoint caller) {
+    endpoint_to_service_query.erase(caller);
+
+#if DEBUG_PRINT
+    TEST_PRINTF("Removing service query for %s.\n", caller.to_string().c_str());
+#endif
+  }
+
+  const char *answer_text(udp_interface::Endpoint caller, int index) {
+    // Warning: The answer text is not saved within the MDNSServiceQuery object.
+    const auto service = endpoint_to_service_query.at(caller).at(index);
+
+    return service_to_service_txt.at(service).c_str();
+  }
+
+  int answer_count(udp_interface::Endpoint caller) {
+    return endpoint_to_service_query.at(caller).size();
   }
 };
 }  // namespace utils

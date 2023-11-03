@@ -78,14 +78,14 @@ struct IPAddressImpl : public udp_interface::IPAddress {
 
   IPAddressImpl(unsigned int address) : address(address) {}
 
-  bool operator==(const udp_interface::IPAddress& other) const override {
-    return address == ((IPAddressImpl&)other).address;
+  bool operator==(const udp_interface::IPAddress &other) const override {
+    return address == ((IPAddressImpl &)other).address;
   }
-  bool operator!=(const udp_interface::IPAddress& other) const override {
+  bool operator!=(const udp_interface::IPAddress &other) const override {
     return !(this->operator==(other));
   }
-  bool operator<(const udp_interface::IPAddress& other) const override {
-    return address < ((IPAddressImpl&)other).address;
+  bool operator<(const udp_interface::IPAddress &other) const override {
+    return address < ((IPAddressImpl &)other).address;
   }
 
   std::string to_string() const override { return std::to_string(address); }
@@ -167,13 +167,13 @@ struct NetworkSimulator {
 };
 
 struct UdpInterfaceImpl : public udp_interface::UDPInterface {
-  udp_interface::Endpoint& endpoint;
-  NetworkHandler& network_handler;
-  NetworkSimulator& network_simulator;
+  udp_interface::Endpoint &endpoint;
+  NetworkHandler &network_handler;
+  NetworkSimulator &network_simulator;
 
-  UdpInterfaceImpl(udp_interface::Endpoint& endpoint,
-                   NetworkHandler& network_handler,
-                   NetworkSimulator& network_simulator)
+  UdpInterfaceImpl(udp_interface::Endpoint &endpoint,
+                   NetworkHandler &network_handler,
+                   NetworkSimulator &network_simulator)
       : endpoint(endpoint),
         network_handler(network_handler),
         network_simulator(network_simulator) {}

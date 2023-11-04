@@ -223,19 +223,13 @@ struct MDNSServiceQuery {
   std::string protocol;
   std::vector<MDNSService> found_services;
 
+  MDNSServiceQuery() = default;
+
   MDNSServiceQuery(std::string service_name, std::string protocol,
                    std::vector<MDNSService> found_services)
       : service_name(service_name),
         protocol(protocol),
         found_services(found_services) {}
-
-  /// @brief This constructor is required to allow this struct to be used in
-  /// std::map.
-  MDNSServiceQuery() {
-    service_name = "";
-    protocol = "";
-    found_services = {};
-  }
 
   MDNSService at(size_t index) { return found_services.at(index); }
 

@@ -375,7 +375,9 @@ struct MDNSSimulator {
         caller.to_string().c_str(), service, protocol);
 #endif
 
-    on_data_received();
+    for (const auto &service : found_services) {
+      on_data_received();
+    }
   }
 
   void remove_service_query(udp_interface::Endpoint caller) {

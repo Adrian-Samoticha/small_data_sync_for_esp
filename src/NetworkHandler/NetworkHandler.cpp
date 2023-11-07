@@ -62,6 +62,11 @@ bool NetworkHandler::send_active_message(
 
   delegate->on_message_emitted(message.get_network_message());
 
+  if (udp_interface == nullptr) {
+    throw std::runtime_error(
+        "Network handler was not provided a UDP interface.");
+  }
+
   return udp_interface->send_packet(endpoint, packet);
 }
 
@@ -148,6 +153,11 @@ void NetworkHandler::send_ack(const unsigned int message_id,
   const auto format = codec->get_format();
   const auto format_byte = get_format_byte_from_data_format(format);
   const auto packet = (char)format_byte + encoded;
+
+  if (udp_interface == nullptr) {
+    throw std::runtime_error(
+        "Network handler was not provided a UDP interface.");
+  }
   udp_interface->send_packet(endpoint, packet);
 }
 
@@ -202,6 +212,11 @@ void NetworkHandler::handle_decoded_message(
 }
 
 void NetworkHandler::handle_packet_reception() {
+  if (udp_interface == nullptr) {
+    throw std::runtime_error(
+        "Network handler was not provided a UDP interface.");
+  }
+
   if (!udp_interface->is_incoming_packet_available()) {
     return;
   }

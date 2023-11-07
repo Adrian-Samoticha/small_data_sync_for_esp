@@ -118,6 +118,10 @@ struct NetworkSimulator {
       return;
     }
 
+    if (endpoint_to_buffer.count(receiver) == 0) {
+      throw std::runtime_error("Receiver endpoint is not registered.");
+    }
+
     const auto incoming_message =
         udp_interface::IncomingMessage(sender, packet);
     endpoint_to_buffer.at(receiver).push(incoming_message);
@@ -129,6 +133,10 @@ struct NetworkSimulator {
 
   bool is_incoming_packet_available(
       const udp_interface::Endpoint receiver) const {
+    if (endpoint_to_buffer.count(receiver) == 0) {
+      throw std::runtime_error("Receiver endpoint is not registered.");
+    }
+
     auto result = !endpoint_to_buffer.at(receiver).empty();
 
 #if DEBUG_PRINT

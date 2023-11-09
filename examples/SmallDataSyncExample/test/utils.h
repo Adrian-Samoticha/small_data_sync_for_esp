@@ -379,6 +379,10 @@ struct MDNSSimulator {
     std::vector<MDNSService> found_services;
 
     for (const auto &services : endpoint_to_services) {
+      if (services.first == caller) {
+        continue;
+      }
+
       for (const auto &service : services.second) {
         if (service.service_name == queried_service_name &&
             service.protocol == protocol) {

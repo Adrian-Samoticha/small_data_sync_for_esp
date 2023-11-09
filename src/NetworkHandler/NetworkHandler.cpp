@@ -200,7 +200,7 @@ void NetworkHandler::handle_decoded_message(
       update_message_receive_time(endpoint, message_id);
 
       const auto message_type =
-          type == "msg" ? MessageType::MSG : MessageType::SYNC;
+          get_message_type_from_string(type.c_str()).value();
 
       if (!message_already_handled) {
         const auto decoded_message =

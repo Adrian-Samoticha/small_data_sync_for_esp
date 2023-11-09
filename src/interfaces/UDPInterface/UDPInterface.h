@@ -35,11 +35,7 @@ struct Endpoint {
     return this->ip != other.ip || this->port != other.port;
   };
   bool operator<(const Endpoint& other) const {
-    if (other.ip < this->ip) {
-      return false;
-    }
-
-    return this->ip < other.ip || this->port < other.port;
+    return std::tie(this->ip, this->port) < std::tie(other.ip, other.port);
   };
 
   std::string to_string() const {

@@ -183,7 +183,7 @@ void NetworkHandler::handle_decoded_message(
       }
       on_received_ack((unsigned int)message_id);
 
-    } else if (type == "msg" || type == "sync") {
+    } else if (type == "msg" || type == "sync" || type == "req_init_sync") {
       if (array_items->size() < 3) {
         return;
       }

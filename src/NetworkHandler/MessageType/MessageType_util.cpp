@@ -15,6 +15,10 @@ tl::optional<MessageType> get_message_type_from_string(const char* type_str) {
     return MessageType::DEREG;
   }
 
+  if (strcmp(type_str, "req_init_sync") == 0) {
+    return MessageType::REQ_INIT_SYNC;
+  }
+
   return {};
 }
 
@@ -28,6 +32,9 @@ std::string get_string_from_message_type(MessageType type) {
 
     case MessageType::DEREG:
       return std::string("dereg");
+
+    case MessageType::REQ_INIT_SYNC:
+      return std::string("req_init_sync");
 
     default:
       return std::string("msg");

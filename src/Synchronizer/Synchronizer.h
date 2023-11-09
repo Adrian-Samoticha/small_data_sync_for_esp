@@ -3,6 +3,8 @@
 #include <functional>
 #include <memory>
 
+#include "./EndpointInfo/EndpointInfo.h"
+#include "./MDNSHandler/MDNSHandler.h"
 #include "NetworkHandler/NetworkHandler.h"
 #include "Synchronizable/Synchronizable.h"
 #include "SynchronizerDelegate/SynchronizerDelegate.h"
@@ -14,9 +16,13 @@ struct Synchronizer : public std::enable_shared_from_this<Synchronizer> {
  private:
   std::shared_ptr<SynchronizerDelegate> delegate;
   NetworkHandler network_handler;
+  mdns_handler::MDNSHandler mdns_handler;
   std::map<udp_interface::Endpoint,
            std::vector<std::shared_ptr<Synchronizable>>>
       endpoint_to_synchronizables;
+  std::map<udp_interface::Endpoint, endpoint_info::EndpointInfo>
+      endpoint_to_endpoint_info;
+  std::deque<std::shared_ptr<Synchronizable>> own_synchronizables;
   uint32_t group_name_hash;
 
   bool is_message_related_to_synchronizable(
@@ -28,10 +34,13 @@ struct Synchronizer : public std::enable_shared_from_this<Synchronizer> {
       const udp_interface::Endpoint endpoint,
       const std::string synchronizable_name) const;
 
-  void init();
+  void add_or_update_own_synchronizable(
+      const std::shared_ptr<Synchronizable> synchronizable);
 
  public:
-  static std::shared_ptr<Synchronizer> create();
+  static std::shared_ptr<Synchronizer> create(const char* hostname);
+
+  void init();
 
   void synchronize(const std::shared_ptr<Synchronizable> synchronizable);
 
@@ -39,6 +48,11 @@ struct Synchronizer : public std::enable_shared_from_this<Synchronizer> {
       const uint32_t group_name_hash, const udp_interface::Endpoint endpoint,
       const std::string synchronizable_name,
       std::shared_ptr<data_object::GenericValue> data_object);
+
+  void perform_initial_synchronization(const udp_interface::Endpoint endpoint);
+
+  void request_initial_synchronization_from_endpoint(
+      const udp_interface::Endpoint endpoint);
 
   bool is_endpoint_known(const udp_interface::Endpoint endpoint) const;
 
@@ -69,11 +83,21 @@ struct Synchronizer : public std::enable_shared_from_this<Synchronizer> {
   void set_udp_interface(
       const std::shared_ptr<udp_interface::UDPInterface> udp_interface);
 
+  void set_mdns_interface(
+      const std::shared_ptr<mdns_interface::MDNSInterface> mdns_interface);
+
   void set_default_data_format(const DataFormat new_default_data_format);
 
   const NetworkHandler& get_network_handler() const;
+  const mdns_handler::MDNSHandler& get_mdns_handler() const;
 
   void add_endpoint(const udp_interface::Endpoint endpoint);
+
+  bool set_endpoint_info(const udp_interface::Endpoint endpoint,
+                         const endpoint_info::EndpointInfo& info);
+
+  tl::optional<const endpoint_info::EndpointInfo&> get_endpoint_info(
+      const udp_interface::Endpoint endpoint) const;
 
   void remove_endpoint(const udp_interface::Endpoint endpoint);
 
@@ -82,6 +106,17 @@ struct Synchronizer : public std::enable_shared_from_this<Synchronizer> {
   uint32_t get_group_name_hash() const;
 
   void deregister_all_endpoints();
+
+  unsigned int get_time_between_scans() const;
+  void set_time_between_scans(unsigned int new_time_in_deciseconds);
+
+  unsigned int get_time_until_next_scan() const;
+  unsigned int get_time_until_next_commit() const;
+
+  unsigned int get_scan_duration() const;
+  void set_scan_duration(unsigned int new_scan_duration_in_deciseconds);
+
+  bool is_scanning() const;
 
   void on_100_ms_passed();
   void heartbeat();

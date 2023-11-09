@@ -47,7 +47,10 @@ struct DelegateImpl : public synchronizer::SynchronizerDelegate {
 };
 
 void basic_synchronizer_test() {
-  const auto synchronizer = synchronizer::Synchronizer::create();
+  const auto synchronizer = synchronizer::Synchronizer::create("hostname");
+  const auto empty_mdns_interface =
+      std::make_shared<utils::EmptyMDNSInterfaceImpl>();
+  synchronizer->set_mdns_interface(empty_mdns_interface);
 
   const auto group_name = "my group";
   synchronizer->set_group_name(group_name);
@@ -55,6 +58,8 @@ void basic_synchronizer_test() {
 
   const auto delegate = std::make_shared<DelegateImpl>();
   synchronizer->set_delegate(delegate);
+
+  synchronizer->init();
 
   const auto sender =
       udp_interface::Endpoint(std::make_shared<utils::IPAddressImpl>(0), 0);
@@ -80,9 +85,13 @@ void basic_synchronizer_test_with_network_simulator() {
   auto network_simulator = utils::NetworkSimulator();
   network_simulator.set_packet_loss_rate(0.5);
 
+  const auto empty_mdns_interface =
+      std::make_shared<utils::EmptyMDNSInterfaceImpl>();
+
   auto sender =
       udp_interface::Endpoint(std::make_shared<utils::IPAddressImpl>(0), 0);
-  auto sender_synchronizer = synchronizer::Synchronizer::create();
+  auto sender_synchronizer = synchronizer::Synchronizer::create("sender");
+  sender_synchronizer->set_mdns_interface(empty_mdns_interface);
   const auto sender_synchronizer_delegate = std::make_shared<DelegateImpl>();
   sender_synchronizer->set_delegate(sender_synchronizer_delegate);
   auto sender_network_handler = sender_synchronizer->get_network_handler();
@@ -92,9 +101,12 @@ void basic_synchronizer_test_with_network_simulator() {
       sender, sender_network_handler, network_simulator);
   sender_synchronizer->set_udp_interface(sender_udp_interface);
 
+  sender_synchronizer->init();
+
   auto receiver =
       udp_interface::Endpoint(std::make_shared<utils::IPAddressImpl>(1), 1);
-  auto receiver_synchronizer = synchronizer::Synchronizer::create();
+  auto receiver_synchronizer = synchronizer::Synchronizer::create("receiver");
+  receiver_synchronizer->set_mdns_interface(empty_mdns_interface);
   const auto receiver_synchronizer_delegate = std::make_shared<DelegateImpl>();
   receiver_synchronizer->set_delegate(receiver_synchronizer_delegate);
   auto receiver_network_handler = receiver_synchronizer->get_network_handler();
@@ -103,6 +115,8 @@ void basic_synchronizer_test_with_network_simulator() {
   auto const receiver_udp_interface = std::make_shared<utils::UdpInterfaceImpl>(
       receiver, receiver_network_handler, network_simulator);
   receiver_synchronizer->set_udp_interface(receiver_udp_interface);
+
+  receiver_synchronizer->init();
 
   network_simulator.register_endpoint(sender);
   network_simulator.register_endpoint(receiver);
@@ -137,11 +151,94 @@ void basic_synchronizer_test_with_network_simulator() {
       "receiver_synchronizable_value’s integer should be 42.");
 }
 
+void basic_mdns_handler_test() {
+  auto mdns_simulator = utils::MDNSSimulator();
+  auto network_simulator = utils::NetworkSimulator();
+
+  auto sender =
+      udp_interface::Endpoint(std::make_shared<utils::IPAddressImpl>(0), 0);
+  auto sender_synchronizer = synchronizer::Synchronizer::create("sender");
+  const auto sender_mdns_interface =
+      std::make_shared<utils::MDNSInterfaceImpl>(sender, mdns_simulator);
+  sender_synchronizer->set_mdns_interface(sender_mdns_interface);
+  const auto sender_synchronizer_delegate = std::make_shared<DelegateImpl>();
+  sender_synchronizer->set_delegate(sender_synchronizer_delegate);
+  auto sender_network_handler = sender_synchronizer->get_network_handler();
+  sender_synchronizer->set_default_data_format(DataFormat::JSON);
+
+  auto const sender_udp_interface = std::make_shared<utils::UdpInterfaceImpl>(
+      sender, sender_network_handler, network_simulator);
+  sender_synchronizer->set_udp_interface(sender_udp_interface);
+
+  sender_synchronizer->set_group_name("my group");
+
+  sender_synchronizer->init();
+
+  auto receiver =
+      udp_interface::Endpoint(std::make_shared<utils::IPAddressImpl>(1), 1);
+  auto receiver_synchronizer = synchronizer::Synchronizer::create("receiver");
+  const auto receiver_mdns_interface =
+      std::make_shared<utils::MDNSInterfaceImpl>(receiver, mdns_simulator);
+  receiver_synchronizer->set_mdns_interface(receiver_mdns_interface);
+  const auto receiver_synchronizer_delegate = std::make_shared<DelegateImpl>();
+  receiver_synchronizer->set_delegate(receiver_synchronizer_delegate);
+  auto receiver_network_handler = receiver_synchronizer->get_network_handler();
+  receiver_synchronizer->set_default_data_format(DataFormat::JSON);
+
+  auto const receiver_udp_interface = std::make_shared<utils::UdpInterfaceImpl>(
+      receiver, receiver_network_handler, network_simulator);
+  receiver_synchronizer->set_udp_interface(receiver_udp_interface);
+
+  receiver_synchronizer->set_group_name("my group");
+
+  receiver_synchronizer->init();
+
+  network_simulator.register_endpoint(sender);
+  network_simulator.register_endpoint(receiver);
+
+  auto sender_synchronizable = std::make_shared<SynchronizableMock>();
+  sender_synchronizable->set_integer(42);
+
+  sender_synchronizer->set_time_between_scans(10);
+  sender_synchronizer->set_scan_duration(10);
+  receiver_synchronizer->set_time_between_scans(10);
+  receiver_synchronizer->set_scan_duration(10);
+
+  sender_synchronizer->synchronize(sender_synchronizable);
+
+  for (int i = 0; i < 100; i += 1) {
+    sender_synchronizer->heartbeat();
+    sender_synchronizer->on_100_ms_passed();
+
+    receiver_synchronizer->heartbeat();
+    receiver_synchronizer->on_100_ms_passed();
+
+    // if (i % 10 == 0) {  // TODO: remove this
+    //   sender_synchronizer->synchronize(sender_synchronizable);
+    // }
+  }
+
+  const auto receiver_synchronizable =
+      receiver_synchronizer
+          ->get_synchronizable_for_endpoint<SynchronizableMock>(
+              sender, "SynchronizableMock");
+
+  TEST_ASSERT_TRUE_MESSAGE(receiver_synchronizable.has_value(),
+                           "receiver_synchronizable should have value.");
+
+  const auto receiver_synchronizable_value = receiver_synchronizable.value();
+
+  TEST_ASSERT_EQUAL_MESSAGE(
+      42, receiver_synchronizable_value->get_integer(),
+      "receiver_synchronizable_value’s integer should be 42.");
+}
+
 int main(int argc, char** argv) {
   UNITY_BEGIN();
 
   RUN_TEST(basic_synchronizer_test);
   RUN_TEST(basic_synchronizer_test_with_network_simulator);
+  RUN_TEST(basic_mdns_handler_test);
 
   return UNITY_END();
 }

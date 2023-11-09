@@ -39,6 +39,12 @@ struct NetworkHandlerDelegateImpl : public NetworkHandlerDelegate {
 
       return;
     }
+
+    if (message.message_type == MessageType::REQ_INIT_SYNC) {
+      synchronizer->perform_initial_synchronization(message.sender);
+
+      return;
+    }
   };
 
   void on_message_emitted(std::shared_ptr<NetworkMessage> message) const {

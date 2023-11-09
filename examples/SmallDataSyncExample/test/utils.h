@@ -439,4 +439,82 @@ struct MDNSSimulator {
     return to_be_returned;
   }
 };
+
+struct MDNSInterfaceImpl : public mdns_interface::MDNSInterface {
+  udp_interface::Endpoint &for_endpoint;
+  MDNSSimulator &simulator;
+
+  MDNSInterfaceImpl(udp_interface::Endpoint &for_endpoint,
+                    MDNSSimulator &simulator)
+      : for_endpoint(for_endpoint), simulator(simulator) {}
+
+  bool begin(const char *hostname) override {
+    return simulator.begin(for_endpoint, hostname);
+  }
+
+  bool add_service(const char *service_name, const char *protocol,
+                   uint16_t port) override {
+    return simulator.add_service(for_endpoint, service_name, protocol, port);
+  }
+
+  bool close() override { return simulator.close(for_endpoint); }
+
+  std::string hostname(int index) override {
+    return simulator.hostname(for_endpoint, index);
+  }
+
+  udp_interface::Endpoint endpoint(int index) override {
+    return simulator.endpoint(for_endpoint, index);
+  }
+
+  bool add_service_text(const char *service_name, const char *protocol,
+                        const char *key, const char *value) override {
+    return simulator.add_service_text(for_endpoint, service_name, protocol, key,
+                                      value);
+  }
+
+  void install_service_query(const char *service, const char *protocol,
+                             std::function<void()> on_data_received) override {
+    return simulator.install_service_query(for_endpoint, service, protocol,
+                                           on_data_received);
+  }
+
+  void remove_service_query() override {
+    return simulator.remove_service_query(for_endpoint);
+  }
+
+  const char *answer_text(int index) override {
+    return simulator.answer_text(for_endpoint, index);
+  }
+
+  int answer_count() override { return simulator.answer_count(for_endpoint); }
+};
+
+struct EmptyMDNSInterfaceImpl : public mdns_interface::MDNSInterface {
+  bool begin(const char *) override { return false; }
+
+  bool add_service(const char *, const char *, uint16_t) override {
+    return false;
+  }
+
+  bool close() override { return false; }
+
+  std::string hostname(int) override { return ""; }
+
+  udp_interface::Endpoint endpoint(int) override { return {}; }
+
+  bool add_service_text(const char *, const char *, const char *,
+                        const char *) override {
+    return false;
+  }
+
+  void install_service_query(const char *, const char *,
+                             std::function<void()>) override {}
+
+  void remove_service_query() override {}
+
+  const char *answer_text(int) override { return ""; }
+
+  int answer_count() override { return 0; }
+};
 }  // namespace utils

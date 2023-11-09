@@ -308,13 +308,29 @@ struct MDNSSimulator {
   }
 
   std::string hostname(udp_interface::Endpoint caller, int index) {
-    return endpoint_to_service_query.at(caller).at(index).service_name;
+    const auto endpoint =
+        endpoint_to_service_query.at(caller).found_services.at(index).endpoint;
+    const auto to_be_returned = endpoint_to_hostname.at(endpoint);
+
+#if DEBUG_PRINT
+    TEST_PRINTF("Accessing hostname for %s (index: %d, accessed hostname: %s)",
+                caller.to_string().c_str(), index, to_be_returned.c_str());
+#endif
+
+    return to_be_returned;
   }
 
   udp_interface::Endpoint endpoint(udp_interface::Endpoint caller, int index) {
-    return endpoint_to_service_query.at(caller)
-        .found_services.at(index)
-        .endpoint;
+    const auto to_be_returned =
+        endpoint_to_service_query.at(caller).found_services.at(index).endpoint;
+
+#if DEBUG_PRINT
+    TEST_PRINTF("Accessing endpoint for %s (index: %d, accessed endpoint: %s)",
+                caller.to_string().c_str(), index,
+                to_be_returned.to_string().c_str());
+#endif
+
+    return to_be_returned;
   }
 
   bool add_service_text(udp_interface::Endpoint caller,
@@ -398,11 +414,25 @@ struct MDNSSimulator {
     // Warning: The answer text is not saved within the MDNSServiceQuery object.
     const auto service = endpoint_to_service_query.at(caller).at(index);
 
-    return service_to_service_txt.at(service).c_str();
+    const auto to_be_returned = service_to_service_txt.at(service).c_str();
+
+#if DEBUG_PRINT
+    TEST_PRINTF("Accessing answer text for %s (index: %d, answer text: %s)",
+                caller.to_string().c_str(), index, to_be_returned);
+#endif
+
+    return to_be_returned;
   }
 
   int answer_count(udp_interface::Endpoint caller) {
-    return endpoint_to_service_query.at(caller).size();
+    const auto to_be_returned = endpoint_to_service_query.at(caller).size();
+
+#if DEBUG_PRINT
+    TEST_PRINTF("Accessing answer count for %s (answer count: %d)",
+                caller.to_string().c_str(), to_be_returned);
+#endif
+
+    return to_be_returned;
   }
 };
 }  // namespace utils

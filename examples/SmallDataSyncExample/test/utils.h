@@ -281,6 +281,10 @@ struct MDNSSimulator {
   }
 
   bool close(udp_interface::Endpoint caller) {
+    if (endpoint_to_hostname.count(caller) == 0) {
+      throw std::runtime_error("Caller endpoint is not registered.");
+    }
+
     endpoint_to_hostname.erase(caller);
     endpoint_to_services.erase(caller);
     endpoint_to_service_query.erase(caller);

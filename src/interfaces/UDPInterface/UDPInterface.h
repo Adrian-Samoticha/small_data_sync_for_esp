@@ -23,6 +23,8 @@ struct Endpoint {
   std::shared_ptr<IPAddress> ip;
   uint16_t port;
 
+  Endpoint() = default;
+
   Endpoint(const std::shared_ptr<IPAddress> ip, const uint16_t port)
       : ip(ip), port(port) {}
 

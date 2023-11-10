@@ -3,6 +3,11 @@
 #include "../Synchronizer.h"
 #include "NetworkHandler/NetworkHandlerDelegate/NetworkHandlerDelegate.h"
 
+/**
+ * An implementation of the NetworkHandlerDelegate interface for use with the
+ * Synchronizer. Forwards incoming messages to the synchronizer’s delegate and
+ * handles incoming sync, dereg, and req_init_sync messages.
+ */
 struct NetworkHandlerDelegateImpl : public NetworkHandlerDelegate {
  private:
   std::shared_ptr<synchronizer::Synchronizer> synchronizer;

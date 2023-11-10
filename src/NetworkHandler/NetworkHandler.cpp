@@ -3,30 +3,51 @@
 #include "DataFormat/DataFormat_util.h"
 #include "MessageType/MessageType_util.h"
 
+/**
+ * Returns a data object containing any information contained in this message.
+ */
 std::shared_ptr<data_object::GenericValue>
 ActiveNetworkMessage::to_data_object() const {
   return message->to_data_object();
 }
 
+/**
+ * Returns the NetworkMessage.
+ */
 std::shared_ptr<NetworkMessage> ActiveNetworkMessage::get_network_message()
     const {
   return message;
 }
 
+/**
+ * Returns the recipient of this ActiveNetworkMessage.
+ */
 udp_interface::Endpoint ActiveNetworkMessage::get_endpoint() const {
   return endpoint;
 }
 
+/**
+ * Returns the codec.
+ */
 std::shared_ptr<Codec> ActiveNetworkMessage::get_codec() const {
   return codec;
 };
 
+/**
+ * Returns the ID.
+ */
 unsigned int ActiveNetworkMessage::get_message_id() const { return message_id; }
 
+/**
+ * Returns how many retries are left before this message is discarded.
+ */
 unsigned int ActiveNetworkMessage::get_retries_left() const {
   return retries_left;
 }
 
+/**
+ * Decrements the number of retries left.
+ */
 bool ActiveNetworkMessage::decrement_retries() {
   if (retries_left == 0) {
     return false;
@@ -37,6 +58,9 @@ bool ActiveNetworkMessage::decrement_retries() {
   return true;
 }
 
+/**
+ * Returns the ID of the next active message to send.
+ */
 unsigned int NetworkHandler::get_next_active_message_id() {
   const auto to_be_returned = next_active_message_id;
 
@@ -45,6 +69,10 @@ unsigned int NetworkHandler::get_next_active_message_id() {
   return to_be_returned;
 }
 
+/**
+ * Sends the given active message over the network.
+ * Throws an exception if no UDP interface is provided.
+ */
 bool NetworkHandler::send_active_message(
     const ActiveNetworkMessage& message) const {
   const auto endpoint = message.get_endpoint();
@@ -75,6 +103,9 @@ bool NetworkHandler::send_active_message(
   return udp_interface->send_packet(endpoint, packet);
 }
 
+/**
+ * Sends all active messages that are currently queued for sending.
+ */
 void NetworkHandler::send_active_messages() {
   auto it = active_messages.begin();
   while (it != active_messages.end()) {
@@ -93,6 +124,9 @@ void NetworkHandler::send_active_messages() {
   }
 }
 
+/**
+ * Returns the codec of an incoming message, if its format byte is valid.
+ */
 tl::optional<std::shared_ptr<Codec>>
 NetworkHandler::get_codec_from_incoming_message(
     const udp_interface::IncomingMessage incoming_message) const {
@@ -112,6 +146,10 @@ NetworkHandler::get_codec_from_incoming_message(
   return {};
 };
 
+/**
+ * Returns the data object representation of an incoming message, if decoding
+ * succeeds.
+ */
 tl::optional<std::shared_ptr<data_object::GenericValue>>
 NetworkHandler::get_data_object_from_incoming_message(
     const udp_interface::IncomingMessage incoming_message,
@@ -132,6 +170,10 @@ NetworkHandler::get_data_object_from_incoming_message(
   return decoded_message;
 }
 
+/**
+ * Called when an ack is received for a message. Removes the corresponding
+ * active message.
+ */
 void NetworkHandler::on_received_ack(const unsigned int message_id) {
   auto it = active_messages.begin();
   while (it != active_messages.end()) {
@@ -147,6 +189,11 @@ void NetworkHandler::on_received_ack(const unsigned int message_id) {
   }
 }
 
+/**
+ * Sends an ack for the given message ID to the given endpoint formatted with
+ * the provided codec.
+ * Throws an exception if no UDP interface is provided.
+ */
 void NetworkHandler::send_ack(const unsigned int message_id,
                               const udp_interface::Endpoint& endpoint,
                               const std::shared_ptr<Codec> codec) const {
@@ -166,6 +213,9 @@ void NetworkHandler::send_ack(const unsigned int message_id,
   udp_interface->send_packet(endpoint, packet);
 }
 
+/**
+ * Handles an incoming decoded message.
+ */
 void NetworkHandler::handle_decoded_message(
     const std::shared_ptr<data_object::GenericValue> decoded_message,
     const udp_interface::Endpoint& endpoint,
@@ -200,9 +250,9 @@ void NetworkHandler::handle_decoded_message(
       send_ack(message_id, endpoint, codec);
 
       const auto message_already_handled =
-          get_message_receive_time(endpoint, message_id).has_value();
+          get_message_reception_time(endpoint, message_id).has_value();
 
-      update_message_receive_time(endpoint, message_id);
+      update_message_reception_time(endpoint, message_id);
 
       const auto message_type =
           get_message_type_from_string(type.c_str()).value();
@@ -216,6 +266,10 @@ void NetworkHandler::handle_decoded_message(
   }
 }
 
+/**
+ * Handles any incoming messages.
+ * Throws an exception if no UDP interface is provided.
+ */
 void NetworkHandler::handle_packet_reception() {
   if (udp_interface == nullptr) {
     throw std::runtime_error(
@@ -252,36 +306,51 @@ void NetworkHandler::handle_packet_reception() {
   handle_decoded_message(decoded_message, incoming_message.endpoint, codec);
 }
 
-tl::optional<uint32_t> NetworkHandler::get_message_receive_time(
+/**
+ * Returns the reception time of the message with the given ID from the given
+ * endpoint, if it exists and has not expired.
+ */
+tl::optional<uint32_t> NetworkHandler::get_message_reception_time(
     const udp_interface::Endpoint endpoint,
     const unsigned int message_id) const {
   const auto key = std::make_pair(endpoint, message_id);
 
-  if (message_receive_times.count(key) == 0) {
+  if (message_reception_times.count(key) == 0) {
     return {};
   }
 
-  return message_receive_times.at(key);
+  return message_reception_times.at(key);
 }
 
-void NetworkHandler::update_message_receive_time(
+/**
+ * Updates the reception time of the message with the given ID from the given
+ * endpoint.
+ */
+void NetworkHandler::update_message_reception_time(
     const udp_interface::Endpoint endpoint, const unsigned int message_id) {
   const auto key = std::make_pair(endpoint, message_id);
-  message_receive_times[key] = time_in_deciseconds;
+  message_reception_times[key] = time_in_deciseconds;
 }
 
-void NetworkHandler::remove_expired_message_receive_times() {
-  auto it = message_receive_times.begin();
-  while (it != message_receive_times.end()) {
+/**
+ * Removes all message reception times that have expired.
+ */
+void NetworkHandler::remove_expired_message_reception_times() {
+  auto it = message_reception_times.begin();
+  while (it != message_reception_times.end()) {
     uint32_t age = time_in_deciseconds - it->second;
-    if (age > max_message_receive_time_in_deciseconds) {
-      it = message_receive_times.erase(it);
+    if (age > max_message_reception_time_in_deciseconds) {
+      it = message_reception_times.erase(it);
     } else {
       it++;
     }
   }
 }
 
+/**
+ * Sends the given message and adds it to the list of active messages. The
+ * message will be retried if it fails to be transmitted.
+ */
 void NetworkHandler::send_message(const std::shared_ptr<NetworkMessage> message,
                                   const udp_interface::Endpoint endpoint,
                                   const unsigned int max_retries,
@@ -293,6 +362,10 @@ void NetworkHandler::send_message(const std::shared_ptr<NetworkMessage> message,
   send_active_message(active_network_message);
 }
 
+/**
+ * Sends the given message and adds it to the list of active messages. The
+ * message will be retried if it fails to be transmitted.
+ */
 void NetworkHandler::send_message(const std::shared_ptr<NetworkMessage> message,
                                   const udp_interface::Endpoint endpoint,
                                   const unsigned int max_retries) {
@@ -300,26 +373,42 @@ void NetworkHandler::send_message(const std::shared_ptr<NetworkMessage> message,
                create_codec_from_format(default_data_format));
 }
 
+/**
+ * Sets this NetworkHandler’s NetworkHandlerDelegate.
+ */
 void NetworkHandler::set_delegate(
     const std::shared_ptr<NetworkHandlerDelegate> new_delegate) {
   delegate = new_delegate;
 }
 
+/**
+ * Provides this NetworkHandler with a UDP interface.
+ */
 void NetworkHandler::set_udp_interface(
     const std::shared_ptr<udp_interface::UDPInterface> new_interface) {
   udp_interface = new_interface;
 }
 
+/**
+ * Sets this NetworkHandler’s default data format.
+ */
 void NetworkHandler::set_default_data_format(
     const DataFormat new_default_data_format) {
   default_data_format = new_default_data_format;
 }
 
-void NetworkHandler::set_max_message_receive_time_in_deciseconds(
+/**
+ * Sets this NetworkHandler’s max message reception time in deciseconds.
+ * Messages reception times expire after this duration.
+ */
+void NetworkHandler::set_max_message_reception_time_in_deciseconds(
     const uint32_t new_max_time) {
-  max_message_receive_time_in_deciseconds = new_max_time;
+  max_message_reception_time_in_deciseconds = new_max_time;
 }
 
+/**
+ * Cancels active messages that match the given filter.
+ */
 void NetworkHandler::cancel_active_messages(
     const std::function<
         bool(const std::shared_ptr<data_object::GenericValue> info)>
@@ -335,14 +424,20 @@ void NetworkHandler::cancel_active_messages(
   }
 }
 
+/**
+ * To be called once every 100 ms.
+ */
 void NetworkHandler::on_100_ms_passed() {
   time_in_deciseconds += 1;
 
   send_active_messages();
 
   if (time_in_deciseconds % 16 == 0) {
-    remove_expired_message_receive_times();
+    remove_expired_message_reception_times();
   }
 }
 
+/**
+ * To be called as frequently as possible.
+ */
 void NetworkHandler::heartbeat() { handle_packet_reception(); }

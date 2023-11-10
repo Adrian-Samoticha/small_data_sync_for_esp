@@ -73,18 +73,18 @@ std::shared_ptr<data_object::GenericValue> generate_random_data_object(
   return data_object::create_null_value();
 }
 
-struct IPAddressImpl : public udp_interface::IPAddress {
+struct IPAddressImpl : public udp_interface::AbstractIPAddress {
   unsigned int address;
 
   IPAddressImpl(unsigned int address) : address(address) {}
 
-  bool operator==(const udp_interface::IPAddress &other) const override {
+  bool operator==(const udp_interface::AbstractIPAddress &other) const override {
     return address == ((IPAddressImpl &)other).address;
   }
-  bool operator!=(const udp_interface::IPAddress &other) const override {
+  bool operator!=(const udp_interface::AbstractIPAddress &other) const override {
     return !(this->operator==(other));
   }
-  bool operator<(const udp_interface::IPAddress &other) const override {
+  bool operator<(const udp_interface::AbstractIPAddress &other) const override {
     return address < ((IPAddressImpl &)other).address;
   }
 

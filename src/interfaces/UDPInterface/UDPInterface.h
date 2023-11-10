@@ -9,23 +9,23 @@
 #include "optional/include/tl/optional.hpp"
 
 namespace udp_interface {
-struct IPAddress {
-  virtual bool operator==(const IPAddress& other) const = 0;
-  virtual bool operator!=(const IPAddress& other) const = 0;
-  virtual bool operator<(const IPAddress& other) const = 0;
+struct AbstractIPAddress {
+  virtual bool operator==(const AbstractIPAddress& other) const = 0;
+  virtual bool operator!=(const AbstractIPAddress& other) const = 0;
+  virtual bool operator<(const AbstractIPAddress& other) const = 0;
 
   virtual std::string to_string() const { return "unimplemented"; };
 
-  virtual ~IPAddress() = default;
+  virtual ~AbstractIPAddress() = default;
 };
 
 struct Endpoint {
-  std::shared_ptr<IPAddress> ip;
+  std::shared_ptr<AbstractIPAddress> ip;
   uint16_t port;
 
   Endpoint() = default;
 
-  Endpoint(const std::shared_ptr<IPAddress> ip, const uint16_t port)
+  Endpoint(const std::shared_ptr<AbstractIPAddress> ip, const uint16_t port)
       : ip(ip), port(port) {}
 
   bool operator==(const Endpoint& other) const {

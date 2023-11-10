@@ -53,6 +53,11 @@ struct SynchronizationMessage : public NetworkMessage {
 
   void on_cancelled() const override {}
 
+  /**
+   * Returns the message’s type, destination endpoint, and synchronizable object
+   * name. Used by the Synchronizer to cancel outgoing synchronization messages
+   * if a synchronizable is updated before its previous state is sent.
+   */
   std::shared_ptr<data_object::GenericValue> get_info() const override {
     return data_object::create_array({
         data_object::create_string_value("sync"),

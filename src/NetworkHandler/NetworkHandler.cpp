@@ -3,6 +3,11 @@
 #include "DataFormat/DataFormat_util.h"
 #include "MessageType/MessageType_util.h"
 
+std::shared_ptr<data_object::GenericValue>
+ActiveNetworkMessage::to_data_object() const {
+  return message->to_data_object();
+}
+
 std::shared_ptr<NetworkMessage> ActiveNetworkMessage::get_network_message()
     const {
   return message;

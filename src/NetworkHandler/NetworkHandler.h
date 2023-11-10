@@ -29,9 +29,7 @@ struct ActiveNetworkMessage {
         message_id(message_id),
         retries_left(retries_left) {}
 
-  std::shared_ptr<data_object::GenericValue> to_data_object() const {
-    return message->to_data_object();
-  }
+  std::shared_ptr<data_object::GenericValue> to_data_object() const;
 
   std::shared_ptr<NetworkMessage> get_network_message() const;
 

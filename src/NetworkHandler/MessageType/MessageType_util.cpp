@@ -1,5 +1,7 @@
 #include "MessageType_util.h"
 
+#include <string.h>
+
 #include <string>
 
 tl::optional<MessageType> get_message_type_from_string(const char* type_str) {

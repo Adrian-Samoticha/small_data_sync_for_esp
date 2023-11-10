@@ -5,10 +5,25 @@
 #include "Synchronizable/Synchronizable.h"
 #include "interfaces/UDPInterface/UDPInterface.h"
 
+/**
+ * A message containing synchronization data to be sent to another endpoint.
+ * Used to synchronize a Synchronizable object.
+ */
 struct SynchronizationMessage : public NetworkMessage {
  private:
+  /**
+   * The Synchronizable to synchronize.
+   */
   std::shared_ptr<Synchronizable> synchronizable;
+
+  /**
+   * The endpoint this message is destined for.
+   */
   udp_interface::Endpoint endpoint;
+
+  /**
+   * A pointer to the Synchronizer that created this message.
+   */
   std::shared_ptr<synchronizer::Synchronizer> synchronizer;
 
  public:

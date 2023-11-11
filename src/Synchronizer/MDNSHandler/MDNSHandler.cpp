@@ -99,14 +99,16 @@ void MDNSHandler::commit_scan_results() {
     const auto hostname = mdns_interface->hostname(i);
     const auto answer_text = mdns_interface->answer_text(i);
 
-    synchronizer->add_endpoint(endpoint);
+    if (!synchronizer->is_endpoint_known(endpoint)) {
+      synchronizer->add_endpoint(endpoint);
+
+      synchronizer->perform_initial_synchronization(endpoint);
+      synchronizer->request_initial_synchronization_from_endpoint(endpoint);
+    }
 
     const auto endpoint_info =
         endpoint_info::EndpointInfo(hostname, answer_text);
     synchronizer->set_endpoint_info(endpoint, endpoint_info);
-
-    synchronizer->perform_initial_synchronization(endpoint);
-    synchronizer->request_initial_synchronization_from_endpoint(endpoint);
   }
 }
 

@@ -281,6 +281,16 @@ void Synchronizer::set_scan_duration(
   mdns_handler.set_scan_duration(new_scan_duration_in_deciseconds);
 }
 
+/**
+ * Performs a service query immediately without waiting for the next scheduled
+ * scan. The timer will still be reset as if a normal scan occurred, therefore
+ * the next scheduled scan will still happen at the normal interval after this
+ * call returns.
+ */
+void Synchronizer::perform_mdns_service_query_now() {
+  mdns_handler.perform_service_query_now();
+}
+
 bool Synchronizer::is_scanning() const { return mdns_handler.is_scanning(); }
 
 void Synchronizer::on_100_ms_passed() {

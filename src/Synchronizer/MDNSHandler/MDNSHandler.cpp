@@ -200,6 +200,16 @@ void MDNSHandler::set_scan_duration(
       std::min(time_until_commit_in_deciseconds, scan_duration_in_deciseconds);
 }
 
+/**
+ * Performs a service query immediately without waiting for the next scheduled
+ * scan. The timer will still be reset as if a normal scan occurred, therefore
+ * the next scheduled scan will still happen at the normal interval after this
+ * call returns.
+ */
+void MDNSHandler::perform_service_query_now() {
+  time_until_next_scan_in_deciseconds = 1;
+}
+
 bool MDNSHandler::is_scanning() const { return is_performing_scan; }
 
 void MDNSHandler::on_100_ms_passed() { handle_scanning_schedule(); }

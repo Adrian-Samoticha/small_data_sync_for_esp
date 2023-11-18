@@ -119,6 +119,8 @@ struct Synchronizer : public std::enable_shared_from_this<Synchronizer> {
   unsigned int get_scan_duration() const;
   void set_scan_duration(unsigned int new_scan_duration_in_deciseconds);
 
+  void perform_mdns_service_query_now();
+
   bool is_scanning() const;
 
   void on_100_ms_passed();

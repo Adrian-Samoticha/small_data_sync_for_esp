@@ -29,13 +29,13 @@ struct Endpoint {
       : ip(ip), port(port) {}
 
   bool operator==(const Endpoint& other) const {
-    return this->ip == other.ip && this->port == other.port;
+    return *this->ip == *other.ip && this->port == other.port;
   };
   bool operator!=(const Endpoint& other) const {
-    return this->ip != other.ip || this->port != other.port;
+    return *this->ip != *other.ip || this->port != other.port;
   };
   bool operator<(const Endpoint& other) const {
-    return std::tie(this->ip, this->port) < std::tie(other.ip, other.port);
+    return std::tie(*this->ip, this->port) < std::tie(*other.ip, other.port);
   };
 
   std::string to_string() const {

@@ -276,10 +276,6 @@ void NetworkHandler::handle_packet_reception() {
         "Network handler was not provided a UDP interface.");
   }
 
-  if (!udp_interface->is_incoming_packet_available()) {
-    return;
-  }
-
   const auto incoming_message_optional = udp_interface->receive_packet();
 
   if (!incoming_message_optional.has_value()) {

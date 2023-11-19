@@ -124,6 +124,13 @@ void Synchronizer::handle_synchronization_message(
 void Synchronizer::perform_initial_synchronization(
     const udp_interface::Endpoint endpoint) {
   for (const auto& synchronizable : own_synchronizables) {
+    network_handler.cancel_active_messages(
+        [this, synchronizable](
+            std::shared_ptr<data_object::GenericValue> data_object) {
+          return is_message_related_to_synchronizable(data_object,
+                                                      synchronizable);
+        });
+
     const std::shared_ptr<NetworkMessage> message =
         std::make_shared<SynchronizationMessage>(synchronizable, endpoint,
                                                  shared_from_this());
